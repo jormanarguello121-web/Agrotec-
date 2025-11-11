@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgroTec - Login</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌱 AgroTec</h1>
+            <p>Iniciar Sesión</p>
+        </header>
+
+        <nav class="navbar">
+            <a href="/" class="nav-link">Inicio</a>
+            <a href="/login" class="nav-link active">Login</a>
+        </nav>
+
+        <main>
+            <section class="login-section">
+                <div class="login-card">
+                    <h2>Acceso al Sistema</h2>
+                    <form id="loginForm" class="login-form">
+                        <div class="form-group">
+                            <label for="loginEmail">Email:</label>
+                            <input type="email" id="loginEmail" name="email" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="loginPassword">Contraseña:</label>
+                            <input type="password" id="loginPassword" name="password" required>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-block">Iniciar Sesión</button>
+                    </form>
+                    <div id="mensajeLogin" class="mensaje"></div>
+                    
+                    <div class="login-links">
+                        <p>¿No tienes cuenta? <a href="/">Regístrate aquí</a></p>
+                    </div>
+                </div>
+
+                <!-- Sección de información después del login -->
+                <div id="userInfo" class="user-info" style="display: none;">
+                    <h3>✅ Sesión Iniciada</h3>
+                    <div id="userDetails"></div>
+                    <button onclick="cerrarSesion()" class="btn btn-secondary">Cerrar Sesión</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                email: document.getElementById('loginEmail').value,
+                password: document.getElementById('loginPassword').value
+            };
+
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+                const mensajeDiv = document.getElementById('mensajeLogin');
+                
+                if (result.success) {
+                    mensajeDiv.innerHTML = `<div class="success">✅ ${result.message}</div>`;
+                    document.getElementById('loginForm').style.display = 'none';
+                    document.getElementById('userInfo').style.display = 'block';
+                    
+                    // Mostrar información del usuario
+                    document.getElementById('userDetails').innerHTML = `
+                        <p><strong>Nombre:</strong> ${result.usuario.nombre}</p>
+                        <p><strong>Email:</strong> ${result.usuario.email}</p>
+                        <p><strong>Rol:</strong> ${result.usuario.rol}</p>
+                        <p><strong>ID:</strong> ${result.usuario.id}</p>
+                    `;
+                } else {
+                    mensajeDiv.innerHTML = `<div class="error">❌ ${result.message}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('mensajeLogin').innerHTML = 
+                    `<div class="error">❌ Error de conexión</div>`;
+            }
+        });
+
+        function cerrarSesion() {
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('userInfo').style.display = 'none';
+            document.getElementById('loginForm').reset();
+            document.getElementById('mensajeLogin').innerHTML = '';
+        }
+    </script>
+</body>
+</html>
