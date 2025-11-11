@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgroTec - Sistema de Gestión</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌱 AgroTec</h1>
+            <p>Sistema de Gestión Agrícola</p>
+        </header>
+
+        <nav class="navbar">
+            <a href="/" class="nav-link active">Inicio</a>
+            <a href="/login" class="nav-link">Login</a>
+            <a href="#registro" class="nav-link">Registro</a>
+        </nav>
+
+        <main>
+            <section class="hero">
+                <h2>Bienvenido a AgroTec</h2>
+                <p>Gestiona tu producción agrícola de manera eficiente</p>
+                <div class="hero-buttons">
+                    <a href="/login" class="btn btn-primary">Iniciar Sesión</a>
+                    <a href="#registro" class="btn btn-secondary">Registrarse</a>
+                </div>
+            </section>
+
+            <section id="registro" class="registration-section">
+                <h2>Registro de Usuario</h2>
+                <form id="registroForm" class="registration-form">
+                    <div class="form-group">
+                        <label for="nombre">Nombre completo:</label>
+                        <input type="text" id="nombre" name="nombre" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Contraseña:</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="rol">Rol:</label>
+                        <select id="rol" name="rol" required>
+                            <option value="">Selecciona un rol</option>
+                            <option value="agricultor">Agricultor</option>
+                            <option value="administrador">Administrador</option>
+                            <option value="tecnico">Técnico Agrícola</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Registrarse</button>
+                </form>
+                <div id="mensajeRegistro" class="mensaje"></div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.getElementById('registroForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                nombre: document.getElementById('nombre').value,
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value,
+                rol: document.getElementById('rol').value
+            };
+
+            try {
+                const response = await fetch('/registrar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+                const mensajeDiv = document.getElementById('mensajeRegistro');
+                
+                if (result.success) {
+                    mensajeDiv.innerHTML = `<div class="success">✅ ${result.message}</div>`;
+                    document.getElementById('registroForm').reset();
+                } else {
+                    mensajeDiv.innerHTML = `<div class="error">❌ ${result.message}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('mensajeRegistro').innerHTML = 
+                    `<div class="error">❌ Error de conexión</div>`;
+            }
+        });
+    </script>
+</body>
+</html>
