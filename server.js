@@ -418,6 +418,27 @@ app.post('/login-redirect', (req, res) => {
     res.json({ redirectUrl });
 });
 
+// ================= SERVIR ARCHIVOS CSS Y JS =================
+
+// Servir archivos JavaScript desde la carpeta js/
+app.get('/js/:archivo', (req, res) => {
+    const archivo = req.params.archivo;
+    res.sendFile(path.join(__dirname, 'js', archivo));
+});
+
+// Servir archivos CSS desde las carpetas de roles
+app.get('/:carpeta/:archivo.css', (req, res) => {
+    const carpeta = req.params.carpeta;
+    const archivo = req.params.archivo;
+    
+    // Solo permitir estas carpetas por seguridad
+    const carpetasPermitidas = ['agricultor', 'cliente', 'admin'];
+    if (carpetasPermitidas.includes(carpeta)) {
+        res.sendFile(path.join(__dirname, carpeta, `${archivo}.css`));
+    } else {
+        res.status(404).json({ success: false, message: 'Archivo no encontrado' });
+    }
+});
 // ================= MANEJO DE ERRORES =================
 
 // Ruta 404
