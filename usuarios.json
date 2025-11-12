@@ -1,3 +1,22 @@
 {
-  "usuarios": []
+  "usuarios": [
+    {
+      "id": 1,
+      "nombre": "Juan Agricultor",
+      "email": "agricultor@ejemplo.com",
+      "password": "password123",
+      "rol": "agricultor",
+      "fechaRegistro": "2024-01-01T00:00:00.000Z",
+      "activo": true
+    },
+    {
+      "id": 2,
+      "nombre": "María Cliente",
+      "email": "cliente@ejemplo.com", 
+      "password": "password123",
+      "rol": "cliente",
+      "fechaRegistro": "2024-01-01T00:00:00.000Z",
+      "activo": true
+    }
+  ]
 }
