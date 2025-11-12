@@ -53,8 +53,7 @@
                             <option value="">Selecciona un rol</option>
                             <option value="agricultor">🌱 Agricultor/Productor</option>
                             <option value="cliente">🛒 Cliente/Consumidor</option>
-                            <option value="administrador">Administrador</option>
-                           
+                            <option value="administrador">⚙️ Administrador</option>
                         </select>
                     </div>
                     
@@ -89,8 +88,13 @@
                 const mensajeDiv = document.getElementById('mensajeRegistro');
                 
                 if (result.success) {
-                    mensajeDiv.innerHTML = `<div class="success">✅ ${result.message}</div>`;
+                    mensajeDiv.innerHTML = `<div class="success">✅ ${result.message} Redirigiendo al login...</div>`;
                     document.getElementById('registroForm').reset();
+                    
+                    // Redirigir automáticamente al login después de 2 segundos
+                    setTimeout(() => {
+                        window.location.href = '/login.html?registro=exitoso';
+                    }, 2000);
                 } else {
                     mensajeDiv.innerHTML = `<div class="error">❌ ${result.message}</div>`;
                 }
@@ -99,6 +103,70 @@
                     `<div class="error">❌ Error de conexión</div>`;
             }
         });
+
+        // Verificar si ya hay una sesión activa al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            const usuario = JSON.parse(localStorage.getItem('usuario'));
+            if (usuario) {
+                // Si ya está logueado, mostrar opción para ir al dashboard
+                const heroButtons = document.querySelector('.hero-buttons');
+                heroButtons.innerHTML = `
+                    <div class="user-welcome-message">
+                        <p>¡Hola ${usuario.nombre}! Ya tienes una sesión activa</p>
+                        <button onclick="irAlDashboard()" class="btn btn-primary">Ir a mi Dashboard</button>
+                        <button onclick="cerrarSesion()" class="btn btn-secondary">Cerrar Sesión</button>
+                    </div>
+                `;
+            }
+        });
+
+        function redirigirPorRol(rol) {
+            switch(rol) {
+                case 'agricultor':
+                    window.location.href = '/agricultor/dashboard.html';
+                    break;
+                case 'cliente':
+                    window.location.href = '/cliente/mercado.html';
+                    break;
+                case 'administrador':
+                    window.location.href = '/admin/dashboard.html';
+                    break;
+                default:
+                    window.location.href = '/';
+            }
+        }
+
+        function irAlDashboard() {
+            const usuario = JSON.parse(localStorage.getItem('usuario'));
+            if (usuario) {
+                redirigirPorRol(usuario.rol);
+            }
+        }
+
+        function cerrarSesion() {
+            localStorage.removeItem('usuario');
+            window.location.reload();
+        }
     </script>
+
+    <style>
+        .user-welcome-message {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .user-welcome-message p {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            color: #333;
+        }
+
+        .user-welcome-message .btn {
+            margin: 0 10px;
+        }
+    </style>
 </body>
 </html>
