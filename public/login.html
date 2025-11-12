@@ -46,13 +46,33 @@
                 <div id="userInfo" class="user-info" style="display: none;">
                     <h3>✅ Sesión Iniciada</h3>
                     <div id="userDetails"></div>
-                    <button onclick="cerrarSesion()" class="btn btn-secondary">Cerrar Sesión</button>
+                    <div class="user-actions">
+                        <button onclick="irAlDashboard()" class="btn btn-primary">Ir a mi Dashboard</button>
+                        <button onclick="cerrarSesion()" class="btn btn-secondary">Cerrar Sesión</button>
+                    </div>
                 </div>
             </section>
         </main>
     </div>
 
     <script>
+        // Verificar si hay un registro reciente en la URL
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const registroExitoso = urlParams.get('registro');
+            
+            if (registroExitoso === 'exitoso') {
+                document.getElementById('mensajeLogin').innerHTML = 
+                    '<div class="success">✅ Registro exitoso! Por favor inicia sesión</div>';
+            }
+
+            // Verificar si ya hay una sesión activa
+            const usuario = JSON.parse(localStorage.getItem('usuario'));
+            if (usuario) {
+                mostrarInfoUsuario(usuario);
+            }
+        });
+
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -74,23 +94,70 @@
                 const mensajeDiv = document.getElementById('mensajeLogin');
                 
                 if (result.success) {
-                    mensajeDiv.innerHTML = `<div class="success">✅ ${result.message}</div>`;
-                    document.getElementById('loginForm').style.display = 'none';
-                    document.getElementById('userInfo').style.display = 'block';
+                    mensajeDiv.innerHTML = `<div class="success">✅ ${result.message} Redirigiendo...</div>`;
                     
-                    // Mostrar información del usuario
-                    document.getElementById('userDetails').innerHTML = `
-                        <p><strong>Nombre:</strong> ${result.usuario.nombre}</p>
-                        <p><strong>Email:</strong> ${result.usuario.email}</p>
-                        <p><strong>Rol:</strong> ${result.usuario.rol}</p>
-                        <p><strong>ID:</strong> ${result.usuario.id}</p>
-                    `;
+                    // Guardar usuario en localStorage
+                    localStorage.setItem('usuario', JSON.stringify(result.usuario));
+                    
+                    // Redirigir automáticamente después de 1.5 segundos
+                    setTimeout(() => {
+                        redirigirPorRol(result.usuario.rol);
+                    }, 1500);
+                    
                 } else {
                     mensajeDiv.innerHTML = `<div class="error">❌ ${result.message}</div>`;
                 }
             } catch (error) {
                 document.getElementById('mensajeLogin').innerHTML = 
                     `<div class="error">❌ Error de conexión</div>`;
+            }
+        });
+
+        function mostrarInfoUsuario(usuario) {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('userInfo').style.display = 'block';
+            
+            document.getElementById('userDetails').innerHTML = `
+                <p><strong>Nombre:</strong> ${usuario.nombre}</p>
+                <p><strong>Email:</strong> ${usuario.email}</p>
+                <p><strong>Rol:</strong> ${usuario.rol}</p>
+                <p><strong>ID:</strong> ${usuario.id}</p>
+            `;
+        }
+
+        function redirigirPorRol(rol) {
+            switch(rol) {
+                case 'agricultor':
+                    window.location.href = '/agricultor/dashboard.html';
+                    break;
+                case 'cliente':
+                    window.location.href = '/cliente/mercado.html';
+                    break;
+                case 'administrador':
+                    window.location.href = '/admin/dashboard.html';
+                    break;
+                default:
+                    window.location.href = '/';
+            }
+        }
+
+        function irAlDashboard() {
+            const usuario = JSON.parse(localStorage.getItem('usuario'));
+            if (usuario) {
+                redirigirPorRol(usuario.rol);
+            }
+        }
+
+        function cerrarSesion() {
+            localStorage.removeItem('usuario');
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('userInfo').style.display = 'none';
+            document.getElementById('loginForm').reset();
+            document.getElementById('mensajeLogin').innerHTML = '';
+        }
+    </script>
+</body>
+</html>
             }
         });
 
