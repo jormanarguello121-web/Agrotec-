@@ -12,8 +12,9 @@ app.use(bodyParser.json());
 app.use(cors());
 app.use(express.static('public'));
 
-// Archivo para usuarios
+// Archivos de datos
 const USERS_FILE = 'usuarios.json';
+const PRODUCTS_FILE = 'productos.json';
 
 // Función para leer usuarios
 function leerUsuarios() {
@@ -39,6 +40,32 @@ function guardarUsuarios(usuarios) {
     }
 }
 
+// Función para leer productos
+function leerProductos() {
+    try {
+        if (fs.existsSync(PRODUCTS_FILE)) {
+            const data = fs.readFileSync(PRODUCTS_FILE, 'utf8');
+            return JSON.parse(data);
+        }
+    } catch (error) {
+        console.log('Error leyendo productos:', error);
+    }
+    return { productos: [] };
+}
+
+// Función para guardar productos
+function guardarProductos(productos) {
+    try {
+        fs.writeFileSync(PRODUCTS_FILE, JSON.stringify(productos, null, 2));
+        return true;
+    } catch (error) {
+        console.log('Error guardando productos:', error);
+        return false;
+    }
+}
+
+// ================= RUTAS PRINCIPALES =================
+
 // Ruta para servir la página principal
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
@@ -49,7 +76,60 @@ app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
-// Ruta para registro de usuarios
+// ================= RUTAS AGRICULTOR =================
+
+// Dashboard agricultor
+app.get('/agricultor/dashboard.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'agricultor', 'dashboard.html'));
+});
+
+// Productos agricultor
+app.get('/agricultor/productos.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'agricultor', 'productos.html'));
+});
+
+// Información agricultor
+app.get('/agricultor/informacion.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'agricultor', 'informacion.html'));
+});
+
+// ================= RUTAS CLIENTE =================
+
+// Marketplace cliente
+app.get('/cliente/mercado.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'cliente', 'mercado.html'));
+});
+
+// Productos cliente
+app.get('/cliente/productos.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'cliente', 'productos.html'));
+});
+
+// Calendario cliente
+app.get('/cliente/calendario.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'cliente', 'calendario.html'));
+});
+
+// ================= RUTAS ADMIN =================
+
+// Dashboard admin
+app.get('/admin/dashboard.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin', 'dashboard.html'));
+});
+
+// Usuarios admin
+app.get('/admin/usuarios.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin', 'usuarios.html'));
+});
+
+// Reportes admin
+app.get('/admin/reportes.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin', 'reportes.html'));
+});
+
+// ================= API RUTAS (ENDOPOINTS DEL SERVIDOR) =================
+
+// API: Registro de usuarios
 app.post('/registrar', (req, res) => {
     const { nombre, email, password, rol } = req.body;
     
@@ -78,7 +158,8 @@ app.post('/registrar', (req, res) => {
         email,
         password, 
         rol,
-        fechaRegistro: new Date().toISOString()
+        fechaRegistro: new Date().toISOString(),
+        activo: true
     };
 
     datos.usuarios.push(nuevoUsuario);
@@ -87,7 +168,11 @@ app.post('/registrar', (req, res) => {
         res.json({ 
             success: true, 
             message: 'Usuario registrado exitosamente',
-            usuario: { id: nuevoUsuario.id, nombre: nuevoUsuario.nombre, rol: nuevoUsuario.rol }
+            usuario: { 
+                id: nuevoUsuario.id, 
+                nombre: nuevoUsuario.nombre, 
+                rol: nuevoUsuario.rol 
+            }
         });
     } else {
         res.status(500).json({ 
@@ -97,7 +182,7 @@ app.post('/registrar', (req, res) => {
     }
 });
 
-// Ruta para login
+// API: Login
 app.post('/login', (req, res) => {
     const { email, password } = req.body;
     
@@ -110,7 +195,7 @@ app.post('/login', (req, res) => {
 
     const datos = leerUsuarios();
     const usuario = datos.usuarios.find(user => 
-        user.email === email && user.password === password
+        user.email === email && user.password === password && user.activo !== false
     );
 
     if (usuario) {
@@ -127,12 +212,12 @@ app.post('/login', (req, res) => {
     } else {
         res.status(401).json({ 
             success: false, 
-            message: 'Credenciales incorrectas' 
+            message: 'Credenciales incorrectas o usuario inactivo' 
         });
     }
 });
 
-// Ruta para obtener todos los usuarios (solo para administradores)
+// API: Obtener todos los usuarios (solo admin)
 app.get('/usuarios', (req, res) => {
     const datos = leerUsuarios();
     // Ocultar passwords antes de enviar
@@ -141,13 +226,227 @@ app.get('/usuarios', (req, res) => {
         nombre: user.nombre,
         email: user.email,
         rol: user.rol,
-        fechaRegistro: user.fechaRegistro
+        fechaRegistro: user.fechaRegistro,
+        activo: user.activo
     }));
     res.json({ usuarios: usuariosSinPassword });
+});
+
+// ================= API PRODUCTOS =================
+
+// API: Obtener todos los productos
+app.get('/productos', (req, res) => {
+    const datos = leerProductos();
+    res.json({ productos: datos.productos });
+});
+
+// API: Obtener productos por agricultor
+app.get('/productos/agricultor/:id', (req, res) => {
+    const agricultorId = parseInt(req.params.id);
+    const datos = leerProductos();
+    const productosAgricultor = datos.productos.filter(producto => 
+        producto.agricultorId === agricultorId
+    );
+    res.json({ productos: productosAgricultor });
+});
+
+// API: Agregar nuevo producto
+app.post('/productos/agregar', (req, res) => {
+    const { nombre, categoria, precio, cantidad, fechaCosecha, descripcion, imagen, agricultorId } = req.body;
+    
+    if (!nombre || !categoria || !precio || !cantidad || !agricultorId) {
+        return res.status(400).json({ 
+            success: false, 
+            message: 'Todos los campos requeridos' 
+        });
+    }
+
+    const datos = leerProductos();
+    
+    // Crear nuevo producto
+    const nuevoProducto = {
+        id: datos.productos.length + 1,
+        nombre,
+        categoria,
+        precio: parseFloat(precio),
+        cantidad: parseInt(cantidad),
+        fechaCosecha: fechaCosecha || null,
+        descripcion: descripcion || '',
+        imagen: imagen || '',
+        agricultorId: parseInt(agricultorId),
+        estado: cantidad > 0 ? 'activo' : 'agotado',
+        fechaCreacion: new Date().toISOString(),
+        fechaActualizacion: new Date().toISOString()
+    };
+
+    datos.productos.push(nuevoProducto);
+    
+    if (guardarProductos(datos)) {
+        res.json({ 
+            success: true, 
+            message: 'Producto agregado exitosamente',
+            producto: nuevoProducto
+        });
+    } else {
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error guardando producto' 
+        });
+    }
+});
+
+// API: Editar producto
+app.put('/productos/editar/:id', (req, res) => {
+    const productId = parseInt(req.params.id);
+    const { nombre, categoria, precio, cantidad, fechaCosecha, descripcion, imagen } = req.body;
+    
+    const datos = leerProductos();
+    const productoIndex = datos.productos.findIndex(p => p.id === productId);
+    
+    if (productoIndex === -1) {
+        return res.status(404).json({ 
+            success: false, 
+            message: 'Producto no encontrado' 
+        });
+    }
+
+    // Actualizar producto
+    datos.productos[productoIndex] = {
+        ...datos.productos[productoIndex],
+        nombre,
+        categoria,
+        precio: parseFloat(precio),
+        cantidad: parseInt(cantidad),
+        fechaCosecha: fechaCosecha || null,
+        descripcion: descripcion || '',
+        imagen: imagen || '',
+        estado: cantidad > 0 ? 'activo' : 'agotado',
+        fechaActualizacion: new Date().toISOString()
+    };
+    
+    if (guardarProductos(datos)) {
+        res.json({ 
+            success: true, 
+            message: 'Producto actualizado exitosamente',
+            producto: datos.productos[productoIndex]
+        });
+    } else {
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error actualizando producto' 
+        });
+    }
+});
+
+// API: Eliminar producto
+app.delete('/productos/eliminar/:id', (req, res) => {
+    const productId = parseInt(req.params.id);
+    
+    const datos = leerProductos();
+    const productoIndex = datos.productos.findIndex(p => p.id === productId);
+    
+    if (productoIndex === -1) {
+        return res.status(404).json({ 
+            success: false, 
+            message: 'Producto no encontrado' 
+        });
+    }
+
+    // Eliminar producto
+    datos.productos.splice(productoIndex, 1);
+    
+    if (guardarProductos(datos)) {
+        res.json({ 
+            success: true, 
+            message: 'Producto eliminado exitosamente'
+        });
+    } else {
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error eliminando producto' 
+        });
+    }
+});
+
+// ================= API ESTADÍSTICAS =================
+
+// API: Estadísticas del agricultor
+app.get('/estadisticas/agricultor/:id', (req, res) => {
+    const agricultorId = parseInt(req.params.id);
+    const productosData = leerProductos();
+    
+    const productosAgricultor = productosData.productos.filter(
+        p => p.agricultorId === agricultorId
+    );
+    
+    const totalProductos = productosAgricultor.length;
+    const productosActivos = productosAgricultor.filter(p => p.estado === 'activo').length;
+    const productosAgotados = productosAgricultor.filter(p => p.estado === 'agotado').length;
+    const ingresosTotales = productosAgricultor.reduce((sum, p) => sum + (p.precio * p.cantidad), 0);
+    
+    res.json({
+        totalProductos,
+        productosActivos,
+        productosAgotados,
+        ingresosTotales,
+        productosRecientes: productosAgricultor.slice(0, 5)
+    });
+});
+
+// ================= RUTAS DE REDIRECCIÓN DESPUÉS DE LOGIN =================
+
+// Redirección basada en rol después del login
+app.post('/login-redirect', (req, res) => {
+    const { rol } = req.body;
+    
+    let redirectUrl = '/';
+    
+    switch(rol) {
+        case 'agricultor':
+            redirectUrl = '/agricultor/dashboard.html';
+            break;
+        case 'cliente':
+            redirectUrl = '/cliente/mercado.html';
+            break;
+        case 'administrador':
+            redirectUrl = '/admin/dashboard.html';
+            break;
+        default:
+            redirectUrl = '/';
+    }
+    
+    res.json({ redirectUrl });
+});
+
+// ================= MANEJO DE ERRORES =================
+
+// Ruta 404
+app.use((req, res) => {
+    res.status(404).json({ 
+        success: false, 
+        message: 'Ruta no encontrada' 
+    });
+});
+
+// Manejo de errores global
+app.use((err, req, res, next) => {
+    console.error('Error del servidor:', err);
+    res.status(500).json({ 
+        success: false, 
+        message: 'Error interno del servidor' 
+    });
 });
 
 // Iniciar servidor
 app.listen(PORT, () => {
     console.log(`🚀 Servidor AgroTec ejecutándose en http://localhost:${PORT}`);
     console.log(`📊 Sistema de gestión listo para usar`);
+    console.log(`🌱 Rutas disponibles:`);
+    console.log(`   • Página principal: /`);
+    console.log(`   • Login: /login`);
+    console.log(`   • Agricultor: /agricultor/dashboard.html`);
+    console.log(`   • Cliente: /cliente/mercado.html`);
+    console.log(`   • Admin: /admin/dashboard.html`);
+    console.log(`   • API Productos: /productos`);
+    console.log(`   • API Usuarios: /usuarios`);
 });
