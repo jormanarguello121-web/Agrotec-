@@ -1,1 +1,330 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgroTec - Mis Productos</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="agricultor.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌱 AgroTec</h1>
+            <p>Gestión de Productos</p>
+        </header>
 
+        <nav class="navbar">
+            <a href="dashboard.html" class="nav-link">Inicio</a>
+            <a href="productos.html" class="nav-link active">Mis Productos</a>
+            <a href="informacion.html" class="nav-link">Información</a>
+            <a href="/" class="nav-link">Salir</a>
+        </nav>
+
+        <main>
+            <!-- Header de productos -->
+            <section class="products-header">
+                <div class="header-content">
+                    <h2>Mis Productos</h2>
+                    <button class="btn btn-primary" onclick="mostrarModalAgregar()">
+                        ➕ Agregar Producto
+                    </button>
+                </div>
+            </section>
+
+            <!-- Filtros y búsqueda -->
+            <section class="filters-section">
+                <div class="filters-grid">
+                    <div class="search-box">
+                        <input type="text" id="buscarProducto" placeholder="Buscar productos..." 
+                               onkeyup="filtrarProductos()">
+                    </div>
+                    <div class="filter-select">
+                        <select id="filtroEstado" onchange="filtrarProductos()">
+                            <option value="todos">Todos los estados</option>
+                            <option value="activo">Activos</option>
+                            <option value="agotado">Agotados</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Lista de productos -->
+            <section class="products-list">
+                <div id="listaProductos" class="products-container">
+                    <!-- Los productos se cargarán aquí dinámicamente -->
+                    <div class="loading">Cargando productos...</div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal para agregar/editar producto -->
+    <div id="modalProducto" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="cerrarModal()">&times;</span>
+            <h3 id="modalTitulo">Agregar Nuevo Producto</h3>
+            <form id="formProducto">
+                <input type="hidden" id="productoId">
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="nombre">Nombre del Producto *</label>
+                        <input type="text" id="nombre" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="categoria">Categoría *</label>
+                        <select id="categoria" required>
+                            <option value="">Seleccionar categoría</option>
+                            <option value="frutas">Frutas</option>
+                            <option value="verduras">Verduras</option>
+                            <option value="granos">Granos</option>
+                            <option value="hortalizas">Hortalizas</option>
+                            <option value="otros">Otros</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="precio">Precio por kg ($) *</label>
+                        <input type="number" id="precio" step="0.01" min="0" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cantidad">Cantidad disponible (kg) *</label>
+                        <input type="number" id="cantidad" min="0" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="fechaCosecha">Fecha de cosecha</label>
+                        <input type="date" id="fechaCosecha">
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label for="descripcion">Descripción</label>
+                        <textarea id="descripcion" rows="3" placeholder="Describe tu producto..."></textarea>
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label for="imagen">URL de imagen (opcional)</label>
+                        <input type="url" id="imagen" placeholder="https://ejemplo.com/imagen.jpg">
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Producto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/agricultor.js"></script>
+    <script>
+        let productos = [];
+        let productoEditando = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar autenticación
+            const usuario = JSON.parse(localStorage.getItem('usuario'));
+            if (!usuario || usuario.rol !== 'agricultor') {
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            cargarProductos();
+            configurarFormulario();
+        });
+
+        function configurarFormulario() {
+            document.getElementById('formProducto').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                await guardarProducto();
+            });
+        }
+
+        async function cargarProductos() {
+            // Simulamos carga de productos (luego se conectarán a la API real)
+            productos = [
+                {
+                    id: 1,
+                    nombre: "Tomates Orgánicos",
+                    categoria: "verduras",
+                    precio: 2.50,
+                    cantidad: 50,
+                    fechaCosecha: "2024-01-15",
+                    descripcion: "Tomates frescos cultivados orgánicamente",
+                    estado: "activo"
+                },
+                {
+                    id: 2,
+                    nombre: "Aguacates Hass",
+                    categoria: "frutas",
+                    precio: 4.00,
+                    cantidad: 0,
+                    fechaCosecha: "2024-01-10",
+                    descripcion: "Aguacates de primera calidad",
+                    estado: "agotado"
+                }
+            ];
+            
+            mostrarProductos();
+        }
+
+        function mostrarProductos(productosFiltrados = null) {
+            const lista = document.getElementById('listaProductos');
+            const productosAMostrar = productosFiltrados || productos;
+            
+            if (productosAMostrar.length === 0) {
+                lista.innerHTML = `
+                    <div class="no-products">
+                        <p>No hay productos que coincidan con tu búsqueda</p>
+                        <button onclick="mostrarModalAgregar()" class="btn btn-primary">
+                            Agregar Primer Producto
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            
+            lista.innerHTML = productosAMostrar.map(producto => `
+                <div class="product-card" data-estado="${producto.estado}">
+                    <div class="product-header">
+                        <h4>${producto.nombre}</h4>
+                        <span class="product-badge ${producto.estado}">
+                            ${producto.estado === 'activo' ? '🟢 Activo' : '🔴 Agotado'}
+                        </span>
+                    </div>
+                    
+                    <div class="product-details">
+                        <div class="detail">
+                            <strong>Categoría:</strong> 
+                            <span class="categoria">${producto.categoria}</span>
+                        </div>
+                        <div class="detail">
+                            <strong>Precio:</strong> 
+                            <span class="precio">$${producto.precio}/kg</span>
+                        </div>
+                        <div class="detail">
+                            <strong>Disponible:</strong> 
+                            <span class="cantidad">${producto.cantidad} kg</span>
+                        </div>
+                        <div class="detail">
+                            <strong>Cosecha:</strong> 
+                            <span class="fecha">${producto.fechaCosecha || 'No especificada'}</span>
+                        </div>
+                    </div>
+                    
+                    ${producto.descripcion ? `
+                        <div class="product-description">
+                            <p>${producto.descripcion}</p>
+                        </div>
+                    ` : ''}
+                    
+                    <div class="product-actions">
+                        <button class="btn btn-small" onclick="editarProducto(${producto.id})">
+                            ✏️ Editar
+                        </button>
+                        <button class="btn btn-small btn-danger" onclick="eliminarProducto(${producto.id})">
+                            🗑️ Eliminar
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function mostrarModalAgregar() {
+            productoEditando = null;
+            document.getElementById('modalTitulo').textContent = 'Agregar Nuevo Producto';
+            document.getElementById('formProducto').reset();
+            document.getElementById('modalProducto').style.display = 'block';
+        }
+
+        function editarProducto(id) {
+            productoEditando = productos.find(p => p.id === id);
+            if (productoEditando) {
+                document.getElementById('modalTitulo').textContent = 'Editar Producto';
+                document.getElementById('productoId').value = productoEditando.id;
+                document.getElementById('nombre').value = productoEditando.nombre;
+                document.getElementById('categoria').value = productoEditando.categoria;
+                document.getElementById('precio').value = productoEditando.precio;
+                document.getElementById('cantidad').value = productoEditando.cantidad;
+                document.getElementById('fechaCosecha').value = productoEditando.fechaCosecha || '';
+                document.getElementById('descripcion').value = productoEditando.descripcion || '';
+                document.getElementById('imagen').value = productoEditando.imagen || '';
+                
+                document.getElementById('modalProducto').style.display = 'block';
+            }
+        }
+
+        async function guardarProducto() {
+            const productoData = {
+                nombre: document.getElementById('nombre').value,
+                categoria: document.getElementById('categoria').value,
+                precio: parseFloat(document.getElementById('precio').value),
+                cantidad: parseInt(document.getElementById('cantidad').value),
+                fechaCosecha: document.getElementById('fechaCosecha').value,
+                descripcion: document.getElementById('descripcion').value,
+                imagen: document.getElementById('imagen').value,
+                estado: document.getElementById('cantidad').value > 0 ? 'activo' : 'agotado'
+            };
+
+            // Simulamos guardado (luego será con API real)
+            if (productoEditando) {
+                // Editar
+                const index = productos.findIndex(p => p.id === productoEditando.id);
+                productos[index] = { ...productoEditando, ...productoData };
+                mostrarMensaje('Producto actualizado correctamente');
+            } else {
+                // Nuevo producto
+                const nuevoProducto = {
+                    ...productoData,
+                    id: Math.max(...productos.map(p => p.id), 0) + 1
+                };
+                productos.push(nuevoProducto);
+                mostrarMensaje('Producto agregado correctamente');
+            }
+
+            mostrarProductos();
+            cerrarModal();
+        }
+
+        function eliminarProducto(id) {
+            if (confirm('¿Estás seguro de que quieres eliminar este producto?')) {
+                productos = productos.filter(p => p.id !== id);
+                mostrarProductos();
+                mostrarMensaje('Producto eliminado correctamente');
+            }
+        }
+
+        function filtrarProductos() {
+            const busqueda = document.getElementById('buscarProducto').value.toLowerCase();
+            const estado = document.getElementById('filtroEstado').value;
+            
+            let productosFiltrados = productos.filter(producto => {
+                const coincideBusqueda = producto.nombre.toLowerCase().includes(busqueda) ||
+                                       producto.descripcion?.toLowerCase().includes(busqueda);
+                const coincideEstado = estado === 'todos' || producto.estado === estado;
+                
+                return coincideBusqueda && coincideEstado;
+            });
+            
+            mostrarProductos(productosFiltrados);
+        }
+
+        function cerrarModal() {
+            document.getElementById('modalProducto').style.display = 'none';
+            productoEditando = null;
+        }
+
+        // Cerrar modal al hacer clic fuera
+        window.onclick = function(event) {
+            const modal = document.getElementById('modalProducto');
+            if (event.target === modal) {
+                cerrarModal();
+            }
+        }
+    </script>
+</body>
+</html>
