@@ -80,51 +80,51 @@ app.get('/login', (req, res) => {
 
 // Dashboard agricultor
 app.get('/agricultor/dashboard.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'agricultor', 'dashboard.html'));
+    res.sendFile(path.join(__dirname, 'agricultor', 'dashboard.html'));
 });
 
 // Productos agricultor
 app.get('/agricultor/productos.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'agricultor', 'productos.html'));
+    res.sendFile(path.join(__dirname, 'agricultor', 'productos.html'));
 });
 
 // Información agricultor
 app.get('/agricultor/informacion.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'agricultor', 'informacion.html'));
+    res.sendFile(path.join(__dirname, 'agricultor', 'informacion.html'));
 });
 
 // ================= RUTAS CLIENTE =================
 
 // Marketplace cliente
 app.get('/cliente/mercado.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'cliente', 'mercado.html'));
+    res.sendFile(path.join(__dirname, 'cliente', 'mercado.html'));
 });
 
 // Productos cliente
 app.get('/cliente/productos.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'cliente', 'productos.html'));
+    res.sendFile(path.join(__dirname, 'cliente', 'productos.html'));
 });
 
 // Calendario cliente
 app.get('/cliente/calendario.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'cliente', 'calendario.html'));
+    res.sendFile(path.join(__dirname, 'cliente', 'calendario.html'));
 });
 
 // ================= RUTAS ADMIN =================
 
 // Dashboard admin
 app.get('/admin/dashboard.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'admin', 'dashboard.html'));
+    res.sendFile(path.join(__dirname, 'admin', 'dashboard.html'));
 });
 
 // Usuarios admin
 app.get('/admin/usuarios.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'admin', 'usuarios.html'));
+    res.sendFile(path.join(__dirname, 'admin', 'usuarios.html'));
 });
 
 // Reportes admin
 app.get('/admin/reportes.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'admin', 'reportes.html'));
+    res.sendFile(path.join(__dirname, 'admin', 'reportes.html'));
 });
 
 // ================= API RUTAS (ENDOPOINTS DEL SERVIDOR) =================
