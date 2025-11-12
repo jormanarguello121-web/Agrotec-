@@ -1,0 +1,46 @@
+{
+  "productos": [
+    {
+      "id": 1,
+      "nombre": "Tomates Orgánicos",
+      "categoria": "verduras",
+      "precio": 2.5,
+      "cantidad": 50,
+      "fechaCosecha": "2024-01-15",
+      "descripcion": "Tomates frescos cultivados orgánicamente",
+      "imagen": "",
+      "agricultorId": 1,
+      "estado": "activo",
+      "fechaCreacion": "2024-01-10T10:00:00.000Z",
+      "fechaActualizacion": "2024-01-10T10:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "nombre": "Aguacates Hass",
+      "categoria": "frutas",
+      "precio": 4.0,
+      "cantidad": 0,
+      "fechaCosecha": "2024-01-10",
+      "descripcion": "Aguacates de primera calidad",
+      "imagen": "",
+      "agricultorId": 1,
+      "estado": "agotado",
+      "fechaCreacion": "2024-01-08T14:30:00.000Z",
+      "fechaActualizacion": "2024-01-08T14:30:00.000Z"
+    },
+    {
+      "id": 3,
+      "nombre": "Zanahorias Frescas",
+      "categoria": "verduras",
+      "precio": 1.8,
+      "cantidad": 30,
+      "fechaCosecha": "2024-01-12",
+      "descripcion": "Zanahorias dulces y crujientes",
+      "imagen": "",
+      "agricultorId": 2,
+      "estado": "activo",
+      "fechaCreacion": "2024-01-09T09:15:00.000Z",
+      "fechaActualizacion": "2024-01-09T09:15:00.000Z"
+    }
+  ]
+}
