@@ -76,7 +76,7 @@ app.post('/registrar', (req, res) => {
         id: datos.usuarios.length + 1,
         nombre,
         email,
-        password, // En producción esto debería estar encriptado
+        password, 
         rol,
         fechaRegistro: new Date().toISOString()
     };
