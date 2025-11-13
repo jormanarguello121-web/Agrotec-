@@ -1,1 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mercado - Cliente</title>
+    <link rel="stylesheet" href="cliente.css">
+</head>
+<body>
+    <header>
+        <h2>Mercado Local 🌱</h2>
+        <div>
+            <span>👤 <span id="userName"></span></span>
+            <button onclick="window.location.href='calendario.html'">🗓️ Calendario</button>
+            <button onclick="window.location.href='productos.html'">📦 Mis Pedidos</button>
+        </div>
+    </header>
+
+    <main>
+        <section>
+            <h3 style="text-align:center; margin-top: 20px;">🛍️ Productos Disponibles</h3>
+            <div id="listaProductos"></div>
+        </section>
+    </main>
+
+    <script src="../auth.js"></script>
+    <script src="cliente.js"></script>
+</body>
+</html>
 
