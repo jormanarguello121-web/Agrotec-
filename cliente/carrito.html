@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgroTec - Carrito</title>
+  <link rel="stylesheet" href="cliente.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🛒 Mi Carrito</h1>
+      <nav>
+        <a href="/cliente/mercado.html">Mercado</a>
+        <a href="/cliente/carrito.html" class="active">Carrito</a>
+        <button class="btn-logout" onclick="cerrarSesion()">Cerrar Sesión</button>
+      </nav>
+    </header>
+
+    <main>
+      <div id="carrito-container" class="carrito-container">
+        <!-- Los productos del carrito aparecerán aquí -->
+      </div>
+
+      <div class="carrito-total">
+        <h3>Total: $<span id="total">0</span></h3>
+        <button class="btn-comprar" onclick="finalizarCompra()">Finalizar Compra</button>
+      </div>
+    </main>
+  </div>
+
+  <script src="cliente.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", mostrarCarrito);
+  </script>
+</body>
+</html>
