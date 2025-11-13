@@ -3,28 +3,32 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mercado - Cliente</title>
-
-  <!-- Vinculamos el CSS -->
+  <title>AgroTec - Mercado del Cliente</title>
   <link rel="stylesheet" href="cliente.css">
 </head>
 <body>
-  <header>
-    <h2>Bienvenido al Mercado 🌿</h2>
-    <button onclick="window.location.href='/login.html'">Cerrar Sesión</button>
-  </header>
+  <div class="container">
+    <header>
+      <h1>🛒 Mercado AgroTec</h1>
+      <nav>
+        <a href="/cliente/mercado.html" class="active">Mercado</a>
+        <a href="/cliente/carrito.html">Carrito</a>
+        <button class="btn-logout" onclick="cerrarSesion()">Cerrar Sesión</button>
+      </nav>
+    </header>
 
-  <main>
-    <section id="listaProductos"></section>
-  </main>
+    <main>
+      <h2>Productos Disponibles</h2>
+      <div id="productos" class="productos-grid">
+        <!-- Los productos se cargarán aquí dinámicamente -->
+      </div>
+    </main>
+  </div>
 
-  <!-- Vinculamos el JS -->
-  <script src="../js/cliente.js"></script>
-
+  <script src="cliente.js"></script>
   <script>
     document.addEventListener("DOMContentLoaded", cargarProductosDisponibles);
   </script>
 </body>
 </html>
-
 
