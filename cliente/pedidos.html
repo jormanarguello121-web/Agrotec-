@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgroTec - Mis Pedidos</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="cliente.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌱 AgroTec</h1>
+            <p>Mis Pedidos y Compras</p>
+        </header>
+
+        <nav class="navbar">
+            <a href="mercado.html" class="nav-link">Marketplace</a>
+            <a href="carrito.html" class="nav-link">🛒 Carrito</a>
+            <a href="pedidos.html" class="nav-link active">📦 Mis Pedidos</a>
+            <a href="calendario.html" class="nav-link">🗓️ Calendario</a>
+            <a href="/" class="nav-link">Salir</a>
+        </nav>
+
+        <main>
+            <!-- Header de Pedidos -->
+            <section class="orders-header">
+                <div class="header-content">
+                    <h2>Historial de Pedidos</h2>
+                    <div class="orders-stats">
+                        <div class="stat-badge">
+                            <span class="stat-number" id="totalPedidos">0</span>
+                            <span class="stat-label">Total Pedidos</span>
+                        </div>
+                        <div class="stat-badge">
+                            <span class="stat-number" id="pedidosPendientes">0</span>
+                            <span class="stat-label">Pendientes</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Filtros de Pedidos -->
+            <section class="filters-section">
+                <div class="filters-grid">
+                    <div class="search-box">
+                        <input type="text" id="buscarPedido" placeholder="🔍 Buscar en pedidos..." 
+                               onkeyup="filtrarPedidos()">
+                    </div>
+                    <div class="filter-select">
+                        <select id="filtroEstado" onchange="filtrarPedidos()">
+                            <option value="todos">Todos los estados</option>
+                            <option value="confirmado">✅ Confirmados</option>
+                            <option value="preparacion">👨‍🍳 En preparación</option>
+                            <option value="camino">🚚 En camino</option>
+                            <option value="entregado">📦 Entregados</option>
+                            <option value="cancelado">❌ Cancelados</option>
+                        </select>
+                    </div>
+                    <div class="filter-select">
+                        <select id="filtroFecha" onchange="filtrarPedidos()">
+                            <option value="todos">Todas las fechas</option>
+                            <option value="hoy">Hoy</option>
+                            <option value="semana">Esta semana</option>
+                            <option value="mes">Este mes</option>
+                            <option value="3meses">Últimos 3 meses</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Lista de Pedidos -->
+            <section class="orders-list">
+                <div id="listaPedidos" class="orders-container">
+                    <div class="empty-orders">
+                        <div class="empty-icon">📦</div>
+                        <h3>Aún no tienes pedidos</h3>
+                        <p>Realiza tu primera compra en nuestro marketplace</p>
+                        <button onclick="window.location.href='mercado.html'" class="btn btn-primary">
+                            Ir al Marketplace
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal de Detalles del Pedido -->
+    <div id="modalPedido" class="modal" style="display: none;">
+        <div class="modal-content large-modal">
+            <span class="close" onclick="cerrarModalPedido()">&times;</span>
+            <div id="detallesPedidoCompleto">
+                <!-- Detalles completos del pedido se cargarán aquí -->
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/cliente.js"></script>
+    <script>
+        let pedidos = JSON.parse(localStorage.getItem('pedidos')) || [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar autenticación
+            const usuario = JSON.parse(localStorage.getItem('usuario'));
+            if (!usuario || usuario.rol !== 'cliente') {
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            cargarPedidos();
+            actualizarEstadisticas();
+        });
+
+        function cargarPedidos() {
+            // Si no hay pedidos, mostrar datos de ejemplo
+            if (pedidos.length === 0) {
+                pedidos = [
+                    {
+                        id: 1001,
+                        fecha: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // Hace 2 días
+                        items: [
+                            { id: 1, nombre: "Tomates Orgánicos", precio: 2.5, cantidad: 3, agricultor: "Juan Agricultor" },
+                            { id: 3, nombre: "Zanahorias Frescas", precio: 1.8, cantidad: 2, agricultor: "María Productora" }
+                        ],
+                        subtotal: 10.10,
+                        envio: 2.00,
+                        total: 12.10,
+                        estado: "entregado",
+                        direccionEntrega: "Calle Principal #123, Ciudad",
+                        metodoPago: "Tarjeta Crédito",
+                        tracking: "TRK123456789"
+                    },
+                    {
+                        id: 1002,
+                        fecha: new Date().toISOString(),
+                        items: [
+                            { id: 1, nombre: "Tomates Orgánicos", precio: 2.5, cantidad: 5, agricultor: "Juan Agricultor" }
+                        ],
+                        subtotal: 12.50,
+                        envio: 2.00,
+                        total: 14.50,
+                        estado: "camino",
+                        direccionEntrega: "Calle Principal #123, Ciudad",
+                        metodoPago: "Tarjeta Débito",
+                        tracking: "TRK987654321"
+                    }
+                ];
+                localStorage.setItem('pedidos', JSON.stringify(pedidos));
+            }
+            
+            mostrarPedidos();
+        }
+
+        function mostrarPedidos(pedidosFiltrados = null) {
+            const lista = document.getElementById('listaPedidos');
+            const pedidosAMostrar = pedidosFiltrados || pedidos;
+            
+            if (pedidosAMostrar.length === 0) {
+                lista.innerHTML = `
+                    <div class="empty-orders">
+                        <div class="empty-icon">🔍</div>
+                        <h3>No se encontraron pedidos</h3>
+                        <p>No hay pedidos que coincidan con tu búsqueda</p>
+                        <button onclick="limpiarFiltros()" class="btn btn-secondary">
+                            Limpiar Filtros
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Ordenar pedidos por fecha (más recientes primero)
+            const pedidosOrdenados = [...pedidosAMostrar].sort((a, b) => 
+                new Date(b.fecha) - new Date(a.fecha)
+            );
+            
+            lista.innerHTML = pedidosOrdenados.map(pedido => `
+                <div class="order-card" data-estado="${pedido.estado}" data-fecha="${pedido.fecha}">
+                    <div class="order-header">
+                        <div class="order-info">
+                            <h4>Pedido #${pedido.id}</h4>
+                            <span class="order-date">${formatearFecha(pedido.fecha)}</span>
+                        </div>
+                        <div class="order-status">
+                            <span class="status-badge ${pedido.estado}">
+                                ${obtenerIconoEstado(pedido.estado)} ${obtenerTextoEstado(pedido.estado)}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="order-summary">
+                        <div class="order-items-preview">
+                            ${pedido.items.slice(0, 2).map(item => `
+                                <span class="item-preview">${item.cantidad}kg ${item.nombre}</span>
+                            `).join('')}
+                            ${pedido.items.length > 2 ? 
+                                `<span class="more-items">+${pedido.items.length - 2} más</span>` : ''}
+                        </div>
+                        
+                        <div class="order-total">
+                            <strong>Total: $${pedido.total.toFixed(2)}</strong>
+                        </div>
+                    </div>
+                    
+                    <div class="order-actions">
+                        <button class="btn btn-small" onclick="verDetallesPedido(${pedido.id})">
+                            👁️ Ver Detalles
+                        </button>
+                        ${pedido.estado === 'camino' ? `
+                            <button class="btn btn-small btn-primary" onclick="rastrearPedido('${pedido.tracking}')">
+                                🚚 Rastrear
+                            </button>
+                        ` : ''}
+                        ${['confirmado', 'preparacion'].includes(pedido.estado) ? `
+                            <button class="btn btn-small btn-danger" onclick="cancelarPedido(${pedido.id})">
+                                ❌ Cancelar
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function verDetallesPedido(pedidoId) {
+            const pedido = pedidos.find(p => p.id === pedidoId);
+            if (pedido) {
+                document.getElementById('detallesPedidoCompleto').innerHTML = `
+                    <div class="order-details-modal">
+                        <h3>Detalles del Pedido #${pedido.id}</h3>
+                        
+                        <div class="details-grid">
+                            <div class="detail-section">
+                                <h4>📦 Información del Pedido</h4>
+                                <div class="detail-row">
+                                    <strong>Fecha:</strong> ${formatearFechaCompleta(pedido.fecha)}
+                                </div>
+                                <div class="detail-row">
+                                    <strong>Estado:</strong> 
+                                    <span class="status-badge ${pedido.estado}">
+                                        ${obtenerIconoEstado(pedido.estado)} ${obtenerTextoEstado(pedido.estado)}
+                                    </span>
+                                </div>
+                                ${pedido.tracking ? `
+                                <div class="detail-row">
+                                    <strong>Número de Seguimiento:</strong> ${pedido.tracking}
+                                </div>
+                                ` : ''}
+                            </div>
+                            
+                            <div class="detail-section">
+                                <h4>🚚 Información de Entrega</h4>
+                                <div class="detail-row">
+                                    <strong>Dirección:</strong> ${pedido.direccionEntrega}
+                                </div>
+                                <div class="detail-row">
+                                    <strong>Método de Pago:</strong> ${pedido.metodoPago}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="items-section">
+                            <h4>🛒 Productos</h4>
+                            <div class="items-list">
+                                ${pedido.items.map(item => `
+                                    <div class="item-detail">
+                                        <div class="item-info">
+                                            <strong>${item.nombre}</strong>
+                                            <span>Agricultor: ${item.agricultor}</span>
+                                        </div>
+                                        <div class="item-quantity">
+                                            ${item.cantidad} kg
+                                        </div>
+                                        <div class="item-price">
+                                            $${(item.precio * item.cantidad).toFixed(2)}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        
+                        <div class="totals-section">
+                            <div class="total-row">
+                                <span>Subtotal:</span>
+                                <span>$${pedido.subtotal.toFixed(2)}</span>
+                            </div>
+                            <div class="total-row">
+                                <span>Envío:</span>
+                                <span>$${pedido.envio.toFixed(2)}</span>
+                            </div>
+                            <div class="total-row final">
+                                <span><strong>Total:</strong></span>
+                                <span><strong>$${pedido.total.toFixed(2)}</strong></span>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-section">
+                            <h4>📊 Progreso del Pedido</h4>
+                            <div class="timeline">
+                                ${generarTimeline(pedido.estado)}
+                            </div>
+                        </div>
+                        
+                        <div class="modal-actions">
+                            <button class="btn btn-primary" onclick="cerrarModalPedido()">
+                                Cerrar
+                            </button>
+                            ${pedido.estado === 'camino' ? `
+                                <button class="btn btn-secondary" onclick="rastrearPedido('${pedido.tracking}')">
+                                    🚚 Rastrear Pedido
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+                document.getElementById('modalPedido').style.display = 'block';
+            }
+        }
+
+        function filtrarPedidos() {
+            const busqueda = document.getElementById('buscarPedido').value.toLowerCase();
+            const estado = document.getElementById('filtroEstado').value;
+            const fecha = document.getElementById('filtroFecha').value;
+            
+            let pedidosFiltrados = pedidos.filter(pedido => {
+                // Filtro por búsqueda
+                const coincideBusqueda = 
+                    `pedido #${pedido.id}`.includes(busqueda) ||
+                    pedido.items.some(item => item.nombre.toLowerCase().includes(busqueda));
+                
+                // Filtro por estado
+                const coincideEstado = estado === 'todos' || pedido.estado === estado;
+                
+                // Filtro por fecha
+                let coincideFecha = true;
+                if (fecha !== 'todos') {
+                    const fechaPedido = new Date(pedido.fecha);
+                    const hoy = new Date();
+                    
+                    switch(fecha) {
+                        case 'hoy':
+                            coincideFecha = fechaPedido.toDateString() === hoy.toDateString();
+                            break;
+                        case 'semana':
+                            const inicioSemana = new Date(hoy.setDate(hoy.getDate() - hoy.getDay()));
+                            coincideFecha = fechaPedido >= inicioSemana;
+                            break;
+                        case 'mes':
+                            coincideFecha = fechaPedido.getMonth() === hoy.getMonth() && 
+                                          fechaPedido.getFullYear() === hoy.getFullYear();
+                            break;
+                        case '3meses':
+                            const tresMesesAtras = new Date(hoy.setMonth(hoy.getMonth() - 3));
+                            coincideFecha = fechaPedido >= tresMesesAtras;
+                            break;
+                    }
+                }
+                
+                return coincideBusqueda && coincideEstado && coincideFecha;
+            });
+            
+            mostrarPedidos(pedidosFiltrados);
+        }
+
+        function limpiarFiltros() {
+            document.getElementById('buscarPedido').value = '';
+            document.getElementById('filtroEstado').value = 'todos';
+            document.getElementById('filtroFecha').value = 'todos';
+            mostrarPedidos();
+        }
+
+        function rastrearPedido(tracking) {
+            alert(`🚚 Rastreando pedido: ${tracking}\n\nEsta funcionalidad se integrará con un sistema de tracking real.`);
+        }
+
+        function cancelarPedido(pedidoId) {
+            if (confirm('¿Estás seguro de que quieres cancelar este pedido?')) {
+                const pedido = pedidos.find(p => p.id === pedidoId);
+                if (pedido) {
+                    pedido.estado = 'cancelado';
+                    localStorage.setItem('pedidos', JSON.stringify(pedidos));
+                    mostrarPedidos();
+                    actualizarEstadisticas();
+                    mostrarMensaje('Pedido cancelado exitosamente', 'info');
+                }
+            }
+        }
+
+        function actualizarEstadisticas() {
+            const totalPedidos = pedidos.length;
+            const pedidosPendientes = pedidos.filter(p => 
+                ['confirmado', 'preparacion', 'camino'].includes(p.estado)
+            ).length;
+            
+            document.getElementById('totalPedidos').textContent = totalPedidos;
+            document.getElementById('pedidosPendientes').textContent = pedidosPendientes;
+        }
+
+        function formatearFecha(fechaISO) {
+            return new Date(fechaISO).toLocaleDateString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        }
+
+        function formatearFechaCompleta(fechaISO) {
+            return new Date(fechaISO).toLocaleDateString('es-ES', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function obtenerIconoEstado(estado) {
+            const iconos = {
+                'confirmado': '✅',
+                'preparacion': '👨‍🍳',
+                'camino': '🚚',
+                'entregado': '📦',
+                'cancelado': '❌'
+            };
+            return iconos[estado] || '📝';
+        }
+
+        function obtenerTextoEstado(estado) {
+            const textos = {
+                'confirmado': 'Confirmado',
+                'preparacion': 'En preparación',
+                'camino': 'En camino',
+                'entregado': 'Entregado',
+                'cancelado': 'Cancelado'
+            };
+            return textos[estado] || 'Pendiente';
+        }
+
+        function generarTimeline(estado) {
+            const pasos = [
+                { estado: 'confirmado', texto: 'Pedido Confirmado', completado: true },
+                { estado: 'preparacion', texto: 'En Preparación', completado: ['preparacion', 'camino', 'entregado'].includes(estado) },
+                { estado: 'camino', texto: 'En Camino', completado: ['camino', 'entregado'].includes(estado) },
+                { estado: 'entregado', texto: 'Entregado', completado: estado === 'entregado' }
+            ];
+            
+            return pasos.map(paso => `
+                <div class="timeline-step ${paso.completado ? 'completed' : ''}">
+                    <div class="timeline-icon">
+                        ${paso.completado ? '✅' : '⏳'}
+                    </div>
+                    <div class="timeline-content">
+                        <strong>${paso.texto}</strong>
+                        ${paso.completado ? '<span class="timeline-date">Completado</span>' : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function cerrarModalPedido() {
+            document.getElementById('modalPedido').style.display = 'none';
+        }
+
+        function mostrarMensaje(mensaje, tipo = 'success') {
+            // Reutilizar el sistema de mensajes del carrito
+            alert(mensaje); // Temporal - integrar con sistema de mensajes
+        }
+
+        // Cerrar modal al hacer clic fuera
+        window.onclick = function(event) {
+            const modal = document.getElementById('modalPedido');
+            if (event.target === modal) {
+                cerrarModalPedido();
+            }
+        }
+    </script>
+
+    <style>
+        .orders-header {
+            margin-bottom: 30px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .orders-stats {
+            display: flex;
+            gap: 15px;
+        }
+
+        .stat-badge {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            text-align: center;
+            min-width: 100px;
+        }
+
+        .stat-number {
+            display: block;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .orders-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .empty-orders {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .order-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid #667eea;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .order-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        .order-info h4 {
+            margin: 0 0 5px 0;
+            color: #333;
+        }
+
+        .order-date {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .status-badge.confirmado {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.preparacion {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-badge.camino {
+            background: #cce7ff;
+            color: #004085;
+        }
+
+        .status-badge.entregado {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-badge.cancelado {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .order-summary {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .order-items-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .item-preview {
+            background: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            border: 1px solid #dee2e6;
+        }
+
+        .more-items {
+            color: #666;
+            font-size: 0.8rem;
+            font-style: italic;
+        }
+
+        .order-total {
+            font-size: 1.1rem;
+            color: #28a745;
+        }
+
+        .order-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .order-details-modal {
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .detail-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .detail-section h4 {
+            margin: 0 0 15px 0;
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 5px;
+        }
+
+        .detail-row {
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .items-section {
+            margin: 25px 0;
+        }
+
+        .items-section h4 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .items-list {
+            background: white;
+            border-radius: 10px;
+            border: 1px solid #dee2e6;
+        }
+
+        .item-detail {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 15px;
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+            align-items: center;
+        }
+
+        .item-detail:last-child {
+            border-bottom: none;
+        }
+
+        .item-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .item-info span {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .item-quantity, .item-price {
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .item-price {
+            color: #28a745;
+        }
+
+        .totals-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .total-row.final {
+            border-bottom: none;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #28a745;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 2px solid #dee2e6;
+        }
+
+        .timeline-section {
+            margin: 25px 0;
+        }
+
+        .timeline-section h4 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .timeline-step {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            border-left: 4px solid #dee2e6;
+        }
+
+        .timeline-step.completed {
+            border-left-color: #28a745;
+            background: #f8fff9;
+        }
+
+        .timeline-icon {
+            font-size: 1.5rem;
+        }
+
+        .timeline-content {
+            flex: 1;
+        }
+
+        .timeline-date {
+            display: block;
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .orders-stats {
+                justify-content: center;
+            }
+            
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .order-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .order-summary {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .item-detail {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 10px;
+            }
+            
+            .modal-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</body>
+</html>
