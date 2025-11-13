@@ -3,28 +3,1041 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calendario - Cliente</title>
+    <title>AgroTec - Calendario de Entregas</title>
+    <link rel="stylesheet" href="../styles.css">
     <link rel="stylesheet" href="cliente.css">
 </head>
 <body>
-    <header>
-        <h2>Calendario de Entregas 🗓️</h2>
-        <div>
-            <button onclick="window.location.href='mercado.html'">🏠 Mercado</button>
-            <button onclick="window.location.href='productos.html'">📦 Pedidos</button>
+    <div class="container">
+        <header>
+            <h1>🌱 AgroTec</h1>
+            <p>Calendario de Entregas</p>
+        </header>
+
+        <nav class="navbar">
+            <a href="mercado.html" class="nav-link">Marketplace</a>
+            <a href="carrito.html" class="nav-link">🛒 Carrito</a>
+            <a href="pedidos.html" class="nav-link">📦 Mis Pedidos</a>
+            <a href="calendario.html" class="nav-link active">🗓️ Calendario</a>
+            <a href="/" class="nav-link">Salir</a>
+        </nav>
+
+        <main>
+            <!-- Header del Calendario -->
+            <section class="calendar-header">
+                <div class="header-content">
+                    <h2>Mis Próximas Entregas</h2>
+                    <div class="calendar-controls">
+                        <button class="btn btn-secondary" onclick="cambiarMes(-1)">← Mes Anterior</button>
+                        <h3 id="mesActual">Noviembre 2024</h3>
+                        <button class="btn btn-secondary" onclick="cambiarMes(1)">Mes Siguiente →</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Resumen de Entregas -->
+            <section class="delivery-summary">
+                <div class="summary-cards">
+                    <div class="summary-card today">
+                        <div class="summary-icon">📅</div>
+                        <div class="summary-content">
+                            <h4>Hoy</h4>
+                            <span class="summary-count" id="entregasHoy">0</span>
+                            <span class="summary-label">entregas</span>
+                        </div>
+                    </div>
+                    <div class="summary-card week">
+                        <div class="summary-icon">📦</div>
+                        <div class="summary-content">
+                            <h4>Esta Semana</h4>
+                            <span class="summary-count" id="entregasSemana">0</span>
+                            <span class="summary-label">entregas</span>
+                        </div>
+                    </div>
+                    <div class="summary-card month">
+                        <div class="summary-icon">🚚</div>
+                        <div class="summary-content">
+                            <h4>Este Mes</h4>
+                            <span class="summary-count" id="entregasMes">0</span>
+                            <span class="summary-label">entregas</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Vista de Calendario -->
+            <section class="calendar-view">
+                <div class="view-options">
+                    <button class="btn view-btn active" onclick="cambiarVista('mes')">Vista Mensual</button>
+                    <button class="btn view-btn" onclick="cambiarVista('semana')">Vista Semanal</button>
+                    <button class="btn view-btn" onclick="cambiarVista('lista')">Vista de Lista</button>
+                </div>
+
+                <!-- Vista Mensual -->
+                <div id="vistaMensual" class="calendar-container">
+                    <div class="calendar-grid">
+                        <div class="calendar-header-days">
+                            <div class="day-header">Dom</div>
+                            <div class="day-header">Lun</div>
+                            <div class="day-header">Mar</div>
+                            <div class="day-header">Mié</div>
+                            <div class="day-header">Jue</div>
+                            <div class="day-header">Vie</div>
+                            <div class="day-header">Sáb</div>
+                        </div>
+                        <div id="diasCalendario" class="calendar-days">
+                            <!-- Los días se generarán dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vista Semanal -->
+                <div id="vistaSemanal" class="weekly-container" style="display: none;">
+                    <div class="week-header">
+                        <div class="week-nav">
+                            <button class="btn btn-small" onclick="cambiarSemana(-1)">← Semana Anterior</button>
+                            <h4 id="semanaActual">Semana 45: Nov 4 - Nov 10</h4>
+                            <button class="btn btn-small" onclick="cambiarSemana(1)">Semana Siguiente →</button>
+                        </div>
+                    </div>
+                    <div id="diasSemana" class="week-days">
+                        <!-- Los días de la semana se generarán dinámicamente -->
+                    </div>
+                </div>
+
+                <!-- Vista de Lista -->
+                <div id="vistaLista" class="list-container" style="display: none;">
+                    <div class="list-header">
+                        <h4>Próximas Entregas</h4>
+                        <div class="list-filters">
+                            <select id="filtroLista" onchange="filtrarListaEntregas()">
+                                <option value="todas">Todas las entregas</option>
+                                <option value="hoy">Hoy</option>
+                                <option value="semana">Esta semana</option>
+                                <option value="proximas">Próximas</option>
+                                <option value="pasadas">Pasadas</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="listaEntregas" class="deliveries-list">
+                        <!-- La lista de entregas se generará dinámicamente -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Entregas del Día -->
+            <section class="today-deliveries">
+                <h3>📦 Entregas de Hoy</h3>
+                <div id="entregasHoyContainer" class="deliveries-container">
+                    <div class="no-deliveries">
+                        <p>No tienes entregas programadas para hoy</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal de Detalles de Entrega -->
+    <div id="modalEntrega" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="cerrarModalEntrega()">&times;</span>
+            <div id="detallesEntrega">
+                <!-- Los detalles de la entrega se cargarán aquí -->
+            </div>
         </div>
-    </header>
+    </div>
 
-    <main style="padding:20px;">
-        <h3>Próximas entregas</h3>
-        <ul id="listaFechas">
-            <li>📅 14 de noviembre - Pedido #1002 (En camino)</li>
-            <li>📅 18 de noviembre - Pedido #1003 (Pendiente)</li>
-        </ul>
-    </main>
+    <script src="../js/auth.js"></script>
+    <script src="../js/cliente.js"></script>
+    <script>
+        let entregas = [];
+        let fechaActual = new Date();
+        let vistaActual = 'mes';
+        let semanaActual = 0;
 
-    <script src="../auth.js"></script>
-    <script src="cliente.js"></script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar autenticación
+            const usuario = JSON.parse(localStorage.getItem('usuario'));
+            if (!usuario || usuario.rol !== 'cliente') {
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            cargarEntregas();
+            generarCalendarioMensual();
+            actualizarResumen();
+            mostrarEntregasHoy();
+        });
+
+        function cargarEntregas() {
+            // Cargar pedidos desde localStorage y convertirlos en entregas
+            const pedidos = JSON.parse(localStorage.getItem('pedidos')) || [];
+            
+            // Si no hay pedidos, usar datos de ejemplo
+            if (pedidos.length === 0) {
+                entregas = [
+                    {
+                        id: 1001,
+                        pedidoId: 1001,
+                        fechaEntrega: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), // En 2 días
+                        estado: 'programada',
+                        productos: [
+                            { nombre: "Tomates Orgánicos", cantidad: 3 },
+                            { nombre: "Zanahorias Frescas", cantidad: 2 }
+                        ],
+                        direccion: "Calle Principal #123, Ciudad",
+                        repartidor: "Juan Repartidor",
+                        telefono: "+57 300 123 4567",
+                        horario: "9:00 - 13:00",
+                        tracking: "TRK123456789"
+                    },
+                    {
+                        id: 1002,
+                        pedidoId: 1002,
+                        fechaEntrega: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), // En 5 días
+                        estado: 'programada',
+                        productos: [
+                            { nombre: "Tomates Orgánicos", cantidad: 5 }
+                        ],
+                        direccion: "Calle Principal #123, Ciudad",
+                        repartidor: "María Repartidora",
+                        telefono: "+57 300 765 4321",
+                        horario: "14:00 - 18:00",
+                        tracking: "TRK987654321"
+                    },
+                    {
+                        id: 1003,
+                        pedidoId: 1003,
+                        fechaEntrega: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // Ayer
+                        estado: 'entregada',
+                        productos: [
+                            { nombre: "Aguacates Hass", cantidad: 2 },
+                            { nombre: "Lechuga Fresca", cantidad: 1 }
+                        ],
+                        direccion: "Calle Principal #123, Ciudad",
+                        repartidor: "Carlos Repartidor",
+                        telefono: "+57 300 555 8888",
+                        horario: "10:00 - 12:00",
+                        tracking: "TRK555888999"
+                    }
+                ];
+            } else {
+                // Convertir pedidos en entregas
+                entregas = pedidos.map(pedido => ({
+                    id: pedido.id,
+                    pedidoId: pedido.id,
+                    fechaEntrega: new Date(new Date(pedido.fecha).getTime() + 3 * 24 * 60 * 60 * 1000).toISOString(), // +3 días
+                    estado: pedido.estado === 'entregado' ? 'entregada' : 'programada',
+                    productos: pedido.items,
+                    direccion: pedido.direccionEntrega || "Calle Principal #123, Ciudad",
+                    repartidor: "Repartidor AgroTec",
+                    telefono: "+57 300 111 2233",
+                    horario: "9:00 - 18:00",
+                    tracking: pedido.tracking || `TRK${pedido.id}`
+                }));
+            }
+            
+            localStorage.setItem('entregas', JSON.stringify(entregas));
+        }
+
+        function generarCalendarioMensual() {
+            const mesActual = document.getElementById('mesActual');
+            const diasContainer = document.getElementById('diasCalendario');
+            
+            // Actualizar título del mes
+            const opciones = { year: 'numeric', month: 'long' };
+            mesActual.textContent = fechaActual.toLocaleDateString('es-ES', opciones);
+            
+            // Obtener primer día del mes y último día del mes
+            const primerDia = new Date(fechaActual.getFullYear(), fechaActual.getMonth(), 1);
+            const ultimoDia = new Date(fechaActual.getFullYear(), fechaActual.getMonth() + 1, 0);
+            
+            // Días en el mes
+            const diasEnMes = ultimoDia.getDate();
+            
+            // Día de la semana del primer día (0 = Domingo, 1 = Lunes, ...)
+            const primerDiaSemana = primerDia.getDay();
+            
+            // Limpiar contenedor
+            diasContainer.innerHTML = '';
+            
+            // Agregar días vacíos al inicio
+            for (let i = 0; i < primerDiaSemana; i++) {
+                const diaVacio = document.createElement('div');
+                diaVacio.className = 'calendar-day empty';
+                diasContainer.appendChild(diaVacio);
+            }
+            
+            // Agregar días del mes
+            for (let dia = 1; dia <= diasEnMes; dia++) {
+                const diaElement = document.createElement('div');
+                diaElement.className = 'calendar-day';
+                
+                const fechaDia = new Date(fechaActual.getFullYear(), fechaActual.getMonth(), dia);
+                const entregasDelDia = obtenerEntregasDelDia(fechaDia);
+                
+                diaElement.innerHTML = `
+                    <div class="day-number">${dia}</div>
+                    ${entregasDelDia.length > 0 ? `
+                        <div class="delivery-indicator">
+                            <span class="delivery-count">${entregasDelDia.length}</span>
+                            <span class="delivery-label">entrega${entregasDelDia.length !== 1 ? 's' : ''}</span>
+                        </div>
+                    ` : ''}
+                `;
+                
+                // Resaltar día actual
+                const hoy = new Date();
+                if (fechaDia.toDateString() === hoy.toDateString()) {
+                    diaElement.classList.add('today');
+                }
+                
+                // Agregar evento click
+                if (entregasDelDia.length > 0) {
+                    diaElement.classList.add('has-deliveries');
+                    diaElement.onclick = () => mostrarEntregasDelDia(fechaDia);
+                }
+                
+                diasContainer.appendChild(diaElement);
+            }
+        }
+
+        function obtenerEntregasDelDia(fecha) {
+            return entregas.filter(entrega => {
+                const fechaEntrega = new Date(entrega.fechaEntrega);
+                return fechaEntrega.toDateString() === fecha.toDateString();
+            });
+        }
+
+        function mostrarEntregasDelDia(fecha) {
+            const entregasDelDia = obtenerEntregasDelDia(fecha);
+            const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const fechaFormateada = fecha.toLocaleDateString('es-ES', opciones);
+            
+            document.getElementById('detallesEntrega').innerHTML = `
+                <h3>Entregas del ${fechaFormateada}</h3>
+                <div class="deliveries-of-day">
+                    ${entregasDelDia.length === 0 ? `
+                        <div class="no-deliveries-modal">
+                            <p>No hay entregas programadas para este día</p>
+                        </div>
+                    ` : entregasDelDia.map(entrega => `
+                        <div class="delivery-item-modal">
+                            <div class="delivery-header">
+                                <h4>Entrega #${entrega.id}</h4>
+                                <span class="status-badge ${entrega.estado}">
+                                    ${entrega.estado === 'entregada' ? '✅ Entregada' : '📦 Programada'}
+                                </span>
+                            </div>
+                            <div class="delivery-details">
+                                <p><strong>Horario:</strong> ${entrega.horario}</p>
+                                <p><strong>Repartidor:</strong> ${entrega.repartidor}</p>
+                                <p><strong>Teléfono:</strong> ${entrega.telefono}</p>
+                                <p><strong>Dirección:</strong> ${entrega.direccion}</p>
+                            </div>
+                            <div class="delivery-products">
+                                <strong>Productos:</strong>
+                                <ul>
+                                    ${entrega.productos.map(producto => `
+                                        <li>${producto.cantidad} kg de ${producto.nombre}</li>
+                                    `).join('')}
+                                </ul>
+                            </div>
+                            <div class="delivery-actions">
+                                <button class="btn btn-small" onclick="verDetallesPedido(${entrega.pedidoId})">
+                                    Ver Pedido
+                                </button>
+                                ${entrega.estado === 'programada' ? `
+                                    <button class="btn btn-small btn-primary" onclick="rastrearEntrega('${entrega.tracking}')">
+                                        🚚 Rastrear
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            document.getElementById('modalEntrega').style.display = 'block';
+        }
+
+        function cambiarMes(direccion) {
+            fechaActual.setMonth(fechaActual.getMonth() + direccion);
+            generarCalendarioMensual();
+            actualizarResumen();
+        }
+
+        function cambiarVista(vista) {
+            vistaActual = vista;
+            
+            // Actualizar botones activos
+            document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Ocultar todas las vistas
+            document.getElementById('vistaMensual').style.display = 'none';
+            document.getElementById('vistaSemanal').style.display = 'none';
+            document.getElementById('vistaLista').style.display = 'none';
+            
+            // Mostrar vista seleccionada
+            document.getElementById(`vista${vista.charAt(0).toUpperCase() + vista.slice(1)}`).style.display = 'block';
+            
+            if (vista === 'semana') {
+                generarVistaSemanal();
+            } else if (vista === 'lista') {
+                generarVistaLista();
+            }
+        }
+
+        function generarVistaSemanal() {
+            // Implementar vista semanal
+            const semanaContainer = document.getElementById('diasSemana');
+            semanaContainer.innerHTML = `
+                <div class="week-placeholder">
+                    <p>Vista semanal en desarrollo</p>
+                    <p>Próximamente podrás ver tus entregas organizadas por semana</p>
+                </div>
+            `;
+        }
+
+        function generarVistaLista() {
+            const listaContainer = document.getElementById('listaEntregas');
+            const entregasOrdenadas = [...entregas].sort((a, b) => 
+                new Date(a.fechaEntrega) - new Date(b.fechaEntrega)
+            );
+            
+            if (entregasOrdenadas.length === 0) {
+                listaContainer.innerHTML = `
+                    <div class="no-deliveries-list">
+                        <p>No tienes entregas programadas</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            listaContainer.innerHTML = entregasOrdenadas.map(entrega => `
+                <div class="delivery-list-item" data-estado="${entrega.estado}">
+                    <div class="list-item-date">
+                        <div class="date-day">${new Date(entrega.fechaEntrega).getDate()}</div>
+                        <div class="date-month">${new Date(entrega.fechaEntrega).toLocaleDateString('es-ES', { month: 'short' })}</div>
+                    </div>
+                    <div class="list-item-content">
+                        <h5>Entrega #${entrega.id}</h5>
+                        <p class="delivery-time">⏰ ${entrega.horario}</p>
+                        <p class="delivery-address">📍 ${entrega.direccion}</p>
+                        <div class="delivery-products-preview">
+                            ${entrega.productos.slice(0, 2).map(p => `${p.cantidad}kg ${p.nombre}`).join(', ')}
+                            ${entrega.productos.length > 2 ? ` +${entrega.productos.length - 2} más` : ''}
+                        </div>
+                    </div>
+                    <div class="list-item-actions">
+                        <span class="status-badge ${entrega.estado}">
+                            ${entrega.estado === 'entregada' ? '✅ Entregada' : '📦 Programada'}
+                        </span>
+                        <button class="btn btn-small" onclick="verDetallesEntrega(${entrega.id})">
+                            Detalles
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filtrarListaEntregas() {
+            // Implementar filtrado para vista de lista
+            generarVistaLista();
+        }
+
+        function actualizarResumen() {
+            const hoy = new Date();
+            const inicioSemana = new Date(hoy);
+            inicioSemana.setDate(hoy.getDate() - hoy.getDay());
+            const finSemana = new Date(inicioSemana);
+            finSemana.setDate(inicioSemana.getDate() + 6);
+            
+            const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+            const finMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
+            
+            const entregasHoy = entregas.filter(e => 
+                new Date(e.fechaEntrega).toDateString() === hoy.toDateString()
+            );
+            
+            const entregasSemana = entregas.filter(e => {
+                const fechaEntrega = new Date(e.fechaEntrega);
+                return fechaEntrega >= inicioSemana && fechaEntrega <= finSemana;
+            });
+            
+            const entregasMes = entregas.filter(e => {
+                const fechaEntrega = new Date(e.fechaEntrega);
+                return fechaEntrega >= inicioMes && fechaEntrega <= finMes;
+            });
+            
+            document.getElementById('entregasHoy').textContent = entregasHoy.length;
+            document.getElementById('entregasSemana').textContent = entregasSemana.length;
+            document.getElementById('entregasMes').textContent = entregasMes.length;
+        }
+
+        function mostrarEntregasHoy() {
+            const container = document.getElementById('entregasHoyContainer');
+            const hoy = new Date();
+            const entregasHoy = entregas.filter(e => 
+                new Date(e.fechaEntrega).toDateString() === hoy.toDateString()
+            );
+            
+            if (entregasHoy.length === 0) {
+                container.innerHTML = `
+                    <div class="no-deliveries">
+                        <p>No tienes entregas programadas para hoy</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = entregasHoy.map(entrega => `
+                <div class="delivery-card today">
+                    <div class="delivery-time-badge">
+                        <span class="time-icon">⏰</span>
+                        <span class="time-text">${entrega.horario}</span>
+                    </div>
+                    <div class="delivery-info">
+                        <h4>Entrega #${entrega.id}</h4>
+                        <p class="delivery-repartidor">👤 ${entrega.repartidor}</p>
+                        <p class="delivery-address">📍 ${entrega.direccion}</p>
+                        <div class="delivery-products">
+                            ${entrega.productos.map(p => `
+                                <span class="product-tag">${p.cantidad}kg ${p.nombre}</span>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div class="delivery-actions">
+                        <button class="btn btn-small btn-primary" onclick="rastrearEntrega('${entrega.tracking}')">
+                            🚚 Rastrear
+                        </button>
+                        <button class="btn btn-small" onclick="contactarRepartidor('${entrega.telefono}')">
+                            📞 Llamar
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function verDetallesEntrega(entregaId) {
+            const entrega = entregas.find(e => e.id === entregaId);
+            if (entrega) {
+                mostrarEntregasDelDia(new Date(entrega.fechaEntrega));
+            }
+        }
+
+        function rastrearEntrega(tracking) {
+            alert(`🚚 Rastreando entrega: ${tracking}\n\nEsta funcionalidad se integrará con un sistema de tracking real.`);
+        }
+
+        function contactarRepartidor(telefono) {
+            alert(`📞 Contactando al repartidor: ${telefono}\n\nEsta funcionalidad abriría la aplicación de teléfono.`);
+        }
+
+        function verDetallesPedido(pedidoId) {
+            // Redirigir a la página de pedidos con el pedido específico
+            window.location.href = `pedidos.html#pedido-${pedidoId}`;
+        }
+
+        function cerrarModalEntrega() {
+            document.getElementById('modalEntrega').style.display = 'none';
+        }
+
+        // Cerrar modal al hacer clic fuera
+        window.onclick = function(event) {
+            const modal = document.getElementById('modalEntrega');
+            if (event.target === modal) {
+                cerrarModalEntrega();
+            }
+        }
+    </script>
+
+    <style>
+        .calendar-header {
+            margin-bottom: 30px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .calendar-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .delivery-summary {
+            margin-bottom: 30px;
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .summary-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .summary-card.today {
+            border-left: 4px solid #28a745;
+        }
+
+        .summary-card.week {
+            border-left: 4px solid #007bff;
+        }
+
+        .summary-card.month {
+            border-left: 4px solid #6f42c1;
+        }
+
+        .summary-icon {
+            font-size: 2.5rem;
+        }
+
+        .summary-content h4 {
+            margin: 0 0 5px 0;
+            color: #333;
+        }
+
+        .summary-count {
+            display: block;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .summary-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .calendar-view {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .view-options {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .view-btn {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            color: #495057;
+        }
+
+        .view-btn.active {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+        }
+
+        .calendar-grid {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .calendar-header-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+
+        .day-header {
+            text-align: center;
+            font-weight: bold;
+            color: #495057;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+
+        .calendar-day {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 10px;
+            min-height: 100px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .calendar-day:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .calendar-day.empty {
+            background: #f8f9fa;
+            border-color: #dee2e6;
+            cursor: default;
+        }
+
+        .calendar-day.today {
+            border-color: #28a745;
+            background: #f8fff9;
+        }
+
+        .calendar-day.has-deliveries {
+            border-color: #007bff;
+            background: #f0f8ff;
+        }
+
+        .day-number {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .delivery-indicator {
+            background: #007bff;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            text-align: center;
+        }
+
+        .delivery-count {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .delivery-label {
+            display: block;
+            font-size: 0.7rem;
+        }
+
+        .today-deliveries {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .deliveries-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .no-deliveries {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+        }
+
+        .delivery-card.today {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            background: #f8fff9;
+            border: 2px solid #28a745;
+            border-radius: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .delivery-card.today:hover {
+            transform: translateY(-2px);
+        }
+
+        .delivery-time-badge {
+            background: #28a745;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 20px;
+            text-align: center;
+            min-width: 100px;
+        }
+
+        .time-icon {
+            display: block;
+            font-size: 1.2rem;
+        }
+
+        .time-text {
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .delivery-info {
+            flex: 1;
+        }
+
+        .delivery-info h4 {
+            margin: 0 0 5px 0;
+            color: #333;
+        }
+
+        .delivery-repartidor, .delivery-address {
+            margin: 2px 0;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .delivery-products {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 8px;
+        }
+
+        .product-tag {
+            background: white;
+            border: 1px solid #dee2e6;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            color: #495057;
+        }
+
+        .delivery-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .deliveries-of-day {
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .delivery-item-modal {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .delivery-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .status-badge.programada {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-badge.entregada {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .delivery-details p {
+            margin: 5px 0;
+            color: #555;
+        }
+
+        .delivery-products ul {
+            margin: 5px 0 0 20px;
+            color: #555;
+        }
+
+        .delivery-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .weekly-container, .list-container {
+            margin-top: 20px;
+        }
+
+        .week-header {
+            margin-bottom: 20px;
+        }
+
+        .week-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .week-placeholder {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .delivery-list-item {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .delivery-list-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .list-item-date {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            min-width: 70px;
+        }
+
+        .date-day {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .date-month {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        .list-item-content {
+            flex: 1;
+        }
+
+        .list-item-content h5 {
+            margin: 0 0 5px 0;
+            color: #333;
+        }
+
+        .delivery-time, .delivery-address {
+            margin: 2px 0;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .delivery-products-preview {
+            color: #495057;
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+
+        .list-item-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: flex-end;
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .calendar-controls {
+                justify-content: center;
+            }
+            
+            .summary-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .calendar-day {
+                min-height: 80px;
+                padding: 5px;
+            }
+            
+            .delivery-card.today {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .delivery-actions {
+                justify-content: center;
+            }
+            
+            .list-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch;
+            }
+            
+            .delivery-list-item {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .list-item-actions {
+                align-items: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .calendar-header-days .day-header {
+                font-size: 0.8rem;
+                padding: 5px;
+            }
+            
+            .calendar-day {
+                min-height: 60px;
+            }
+            
+            .day-number {
+                font-size: 0.9rem;
+            }
+            
+            .delivery-indicator {
+                font-size: 0.7rem;
+                padding: 2px 4px;
+            }
+        }
+    </style>
 </body>
 </html>
-
