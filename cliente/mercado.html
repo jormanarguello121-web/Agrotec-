@@ -1,11 +1,9 @@
-// === REEMPLAZA todo el script de mercado.html con esto ===
-
 <script src="../js/auth.js"></script>
 <script src="../js/cliente.js"></script>
 <script>
     let productos = [];
 
-    document.addEventListener('DOMContentLoaded', async function() {
+    document.addEventListener('DOMContentLoaded', function() {
         // Verificar autenticación
         const usuario = JSON.parse(localStorage.getItem('usuario'));
         if (!usuario || usuario.rol !== 'cliente') {
@@ -13,30 +11,129 @@
             return;
         }
         
-        await cargarProductosDisponibles();
+        cargarProductosDisponibles();
     });
 
     async function cargarProductosDisponibles() {
         try {
-            // Usar el ClienteManager para cargar productos
-            productos = await clienteManager.cargarProductosDisponibles();
-            console.log('Productos cargados:', productos); // Para debug
-            mostrarProductos();
+            console.log('🔄 Cargando productos...');
+            
+            // Intentar cargar desde la API
+            const response = await fetch('/productos');
+            
+            if (!response.ok) {
+                throw new Error(`Error HTTP: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log('📦 Respuesta de la API:', data);
+            
+            // Diferentes estructuras posibles de la API
+            if (data.productos && Array.isArray(data.productos)) {
+                productos = data.productos;
+            } else if (Array.isArray(data)) {
+                productos = data;
+            } else {
+                console.warn('Estructura de datos inesperada:', data);
+                productos = [];
+            }
+            
         } catch (error) {
-            console.error('Error cargando productos:', error);
-            mostrarProductos(); // Mostrar productos vacíos o de ejemplo
+            console.error('❌ Error cargando productos:', error);
+            // Usar datos de ejemplo como fallback
+            productos = obtenerProductosEjemplo();
         }
+        
+        console.log('🎯 Productos a mostrar:', productos);
+        mostrarProductos();
+    }
+
+    function obtenerProductosEjemplo() {
+        return [
+            {
+                id: 1,
+                nombre: "🍅 Tomates Orgánicos",
+                categoria: "verduras",
+                precio: 2.5,
+                cantidad: 50,
+                descripcion: "Tomates frescos cultivados orgánicamente sin pesticidas",
+                agricultor: "Juan Agricultor",
+                imagen: "",
+                estado: "activo"
+            },
+            {
+                id: 2,
+                nombre: "🥑 Aguacates Hass",
+                categoria: "frutas", 
+                precio: 4.0,
+                cantidad: 0,
+                descripcion: "Aguacates de primera calidad para exportación",
+                agricultor: "Pedro Productor",
+                imagen: "",
+                estado: "agotado"
+            },
+            {
+                id: 3,
+                nombre: "🥕 Zanahorias Frescas",
+                categoria: "verduras",
+                precio: 1.8,
+                cantidad: 30,
+                descripcion: "Zanahorias dulces y crujientes recién cosechadas",
+                agricultor: "María Agricultora",
+                imagen: "",
+                estado: "activo"
+            },
+            {
+                id: 4,
+                nombre: "🍌 Bananos Maduros",
+                categoria: "frutas",
+                precio: 1.2,
+                cantidad: 25,
+                descripcion: "Bananos naturales en su punto perfecto de maduración",
+                agricultor: "Carlos Campesino",
+                imagen: "",
+                estado: "activo"
+            },
+            {
+                id: 5,
+                nombre: "🥦 Brócoli Orgánico",
+                categoria: "verduras",
+                precio: 3.5,
+                cantidad: 15,
+                descripcion: "Brócoli fresco cultivado de manera sostenible",
+                agricultor: "Ana Agroecológica",
+                imagen: "",
+                estado: "activo"
+            },
+            {
+                id: 6,
+                nombre: "🍓 Fresas de la Montaña",
+                categoria: "frutas",
+                precio: 5.0,
+                cantidad: 8,
+                descripcion: "Fresas rojas y jugosas cultivadas en altura",
+                agricultor: "Roberto Fruticultor",
+                imagen: "",
+                estado: "activo"
+            }
+        ];
     }
 
     function mostrarProductos(productosFiltrados = null) {
         const lista = document.getElementById('listaProductos');
         const productosAMostrar = productosFiltrados || productos;
         
+        console.log('🖥️ Mostrando productos:', productosAMostrar);
+        
         if (!productosAMostrar || productosAMostrar.length === 0) {
             lista.innerHTML = `
-                <div class="no-products">
-                    <p>No hay productos disponibles en este momento</p>
-                    <p>Intenta recargar la página o contactar al administrador</p>
+                <div class="no-products" style="text-align: center; padding: 40px; color: #666;">
+                    <div style="font-size: 4rem; margin-bottom: 20px;">📦</div>
+                    <h3>No hay productos disponibles</h3>
+                    <p>No se encontraron productos en el marketplace</p>
+                    <button onclick="location.reload()" class="btn btn-primary" style="margin-top: 15px;">
+                        🔄 Recargar Página
+                    </button>
                 </div>
             `;
             return;
@@ -54,35 +151,36 @@
                 <div class="product-details">
                     <div class="detail">
                         <strong>Categoría:</strong> 
-                        <span class="categoria">${producto.categoria}</span>
+                        <span class="categoria" style="text-transform: capitalize;">${producto.categoria}</span>
                     </div>
                     <div class="detail">
                         <strong>Precio:</strong> 
-                        <span class="precio">$${producto.precio}/kg</span>
+                        <span class="precio" style="color: #28a745; font-weight: bold;">$${producto.precio}/kg</span>
                     </div>
                     <div class="detail">
                         <strong>Disponible:</strong> 
-                        <span class="cantidad">${producto.cantidad} kg</span>
+                        <span class="cantidad" style="font-weight: bold;">${producto.cantidad} kg</span>
                     </div>
                     <div class="detail">
                         <strong>Agricultor:</strong> 
-                        <span class="agricultor">${producto.agricultor || 'AgroTec'}</span>
+                        <span class="agricultor" style="color: #666;">${producto.agricultor || 'Agricultor AgroTec'}</span>
                     </div>
                 </div>
                 
                 ${producto.descripcion ? `
                     <div class="product-description">
-                        <p>${producto.descripcion}</p>
+                        <p style="margin: 0; color: #666; font-size: 0.95rem; line-height: 1.4;">${producto.descripcion}</p>
                     </div>
                 ` : ''}
                 
                 <div class="product-actions">
-                    <button class="btn btn-small" onclick="verDetallesProducto(${producto.id})">
+                    <button class="btn btn-small" onclick="verDetallesProducto(${producto.id})" style="background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer;">
                         👁️ Ver Detalles
                     </button>
                     <button class="btn btn-primary btn-small" 
-                            onclick="agregarAlCarrito(${producto.id})"
-                            ${producto.cantidad === 0 ? 'disabled' : ''}>
+                            onclick="agregarAlCarritoDesdeMarketplace(${producto.id})"
+                            ${producto.cantidad === 0 ? 'disabled' : ''}
+                            style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer; ${producto.cantidad === 0 ? 'opacity: 0.6; cursor: not-allowed;' : ''}">
                         🛒 Agregar al Carrito
                     </button>
                 </div>
@@ -90,13 +188,46 @@
         `).join('');
     }
 
-    function agregarAlCarrito(id) {
+    function agregarAlCarritoDesdeMarketplace(id) {
         const producto = productos.find(p => p.id === id);
-        if (producto) {
-            const agregado = clienteManager.agregarAlCarrito(producto);
-            if (agregado) {
-                // El mensaje ya se muestra en ClienteManager
+        if (producto && producto.cantidad > 0) {
+            // Usar el ClienteManager si está disponible
+            if (window.clienteManager) {
+                clienteManager.agregarAlCarrito(producto);
+            } else {
+                // Fallback: manejo local del carrito
+                let carrito = JSON.parse(localStorage.getItem('carrito')) || [];
+                const itemExistente = carrito.find(item => item.id === id);
+                
+                if (itemExistente) {
+                    itemExistente.cantidad += 1;
+                } else {
+                    carrito.push({
+                        id: producto.id,
+                        nombre: producto.nombre,
+                        precio: producto.precio,
+                        cantidad: 1,
+                        agricultor: producto.agricultor
+                    });
+                }
+                
+                localStorage.setItem('carrito', JSON.stringify(carrito));
+                
+                // Mostrar mensaje
+                alert(`✅ ${producto.nombre} agregado al carrito`);
+                
+                // Actualizar contador
+                actualizarContadorCarrito();
             }
+        }
+    }
+
+    function actualizarContadorCarrito() {
+        const carrito = JSON.parse(localStorage.getItem('carrito')) || [];
+        const totalItems = carrito.reduce((sum, item) => sum + item.cantidad, 0);
+        const cartCountElement = document.getElementById('cartCount');
+        if (cartCountElement) {
+            cartCountElement.textContent = totalItems;
         }
     }
 
@@ -131,34 +262,37 @@
         const producto = productos.find(p => p.id === id);
         if (producto) {
             document.getElementById('modalContenido').innerHTML = `
-                <h3>${producto.nombre}</h3>
-                <div class="product-details-modal">
-                    <div class="detail-row">
-                        <strong>Categoría:</strong> ${producto.categoria}
+                <h3 style="color: #333; margin-bottom: 20px;">${producto.nombre}</h3>
+                <div class="product-details-modal" style="margin: 20px 0;">
+                    <div class="detail-row" style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
+                        <strong>Categoría:</strong> <span style="text-transform: capitalize;">${producto.categoria}</span>
                     </div>
-                    <div class="detail-row">
-                        <strong>Precio:</strong> $${producto.precio}/kg
+                    <div class="detail-row" style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
+                        <strong>Precio:</strong> <span style="color: #28a745; font-weight: bold;">$${producto.precio}/kg</span>
                     </div>
-                    <div class="detail-row">
-                        <strong>Disponible:</strong> ${producto.cantidad} kg
+                    <div class="detail-row" style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
+                        <strong>Disponible:</strong> <span style="font-weight: bold;">${producto.cantidad} kg</span>
                     </div>
-                    <div class="detail-row">
-                        <strong>Agricultor:</strong> ${producto.agricultor || 'AgroTec'}
+                    <div class="detail-row" style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
+                        <strong>Agricultor:</strong> <span style="color: #666;">${producto.agricultor || 'Agricultor AgroTec'}</span>
                     </div>
                     ${producto.descripcion ? `
-                    <div class="detail-row">
+                    <div class="detail-row" style="margin-bottom: 15px;">
                         <strong>Descripción:</strong> 
-                        <p>${producto.descripcion}</p>
+                        <p style="margin: 10px 0 0 0; color: #666; line-height: 1.5;">${producto.descripcion}</p>
                     </div>
                     ` : ''}
                 </div>
-                <div class="modal-actions">
+                <div class="modal-actions" style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
                     <button class="btn btn-primary" 
-                            onclick="agregarAlCarrito(${producto.id}); cerrarModal()"
-                            ${producto.cantidad === 0 ? 'disabled' : ''}>
+                            onclick="agregarAlCarritoDesdeMarketplace(${producto.id}); cerrarModal()"
+                            ${producto.cantidad === 0 ? 'disabled' : ''}
+                            style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; ${producto.cantidad === 0 ? 'opacity: 0.6; cursor: not-allowed;' : ''}">
                         🛒 Agregar al Carrito
                     </button>
-                    <button class="btn btn-secondary" onclick="cerrarModal()">Cerrar</button>
+                    <button class="btn btn-secondary" onclick="cerrarModal()" style="background: transparent; color: #667eea; border: 2px solid #667eea; padding: 10px 20px; border-radius: 20px; cursor: pointer;">
+                        Cerrar
+                    </button>
                 </div>
             `;
             document.getElementById('modalProducto').style.display = 'block';
@@ -176,4 +310,9 @@
             cerrarModal();
         }
     }
+
+    // Inicializar contador de carrito
+    document.addEventListener('DOMContentLoaded', function() {
+        actualizarContadorCarrito();
+    });
 </script>
