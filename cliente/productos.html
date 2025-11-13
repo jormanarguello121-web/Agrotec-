@@ -1,1 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Pedidos - Cliente</title>
+    <link rel="stylesheet" href="cliente.css">
+</head>
+<body>
+    <header>
+        <h2>Mis Pedidos 📦</h2>
+        <div>
+            <button onclick="window.location.href='mercado.html'">🏠 Mercado</button>
+            <button onclick="window.location.href='calendario.html'">🗓️ Calendario</button>
+        </div>
+    </header>
+
+    <main>
+        <section>
+            <h3 style="text-align:center; margin-top: 20px;">Historial de pedidos</h3>
+            <div id="listaPedidos"></div>
+        </section>
+    </main>
+
+    <script src="../auth.js"></script>
+    <script src="cliente.js"></script>
+</body>
+</html>
 
