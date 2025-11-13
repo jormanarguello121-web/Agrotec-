@@ -1,372 +1,179 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgroTec - Marketplace</title>
-    <link rel="stylesheet" href="../styles.css">
-    <link rel="stylesheet" href="cliente.css">
-</head>
-<body>
-    <div class="container">
-        <header>
-            <h1>🌱 AgroTec</h1>
-            <p>Marketplace - Productos Frescos</p>
-        </header>
+// === REEMPLAZA todo el script de mercado.html con esto ===
 
-        <nav class="navbar">
-            <a href="mercado.html" class="nav-link active">Marketplace</a>
-            <a href="carrito.html" class="nav-link">🛒 Carrito</a>
-            <a href="pedidos.html" class="nav-link">📦 Mis Pedidos</a>
-            <a href="calendario.html" class="nav-link">🗓️ Calendario</a>
-            <a href="/" class="nav-link">Salir</a>
-        </nav>
+<script src="../js/auth.js"></script>
+<script src="../js/cliente.js"></script>
+<script>
+    let productos = [];
 
-        <main>
-            <!-- Header del Marketplace -->
-            <section class="products-header">
-                <div class="header-content">
-                    <h2>Productos Disponibles</h2>
-                    <div class="header-actions">
-                        <span class="cart-badge" id="cartCount">0</span>
+    document.addEventListener('DOMContentLoaded', async function() {
+        // Verificar autenticación
+        const usuario = JSON.parse(localStorage.getItem('usuario'));
+        if (!usuario || usuario.rol !== 'cliente') {
+            window.location.href = '/login.html';
+            return;
+        }
+        
+        await cargarProductosDisponibles();
+    });
+
+    async function cargarProductosDisponibles() {
+        try {
+            // Usar el ClienteManager para cargar productos
+            productos = await clienteManager.cargarProductosDisponibles();
+            console.log('Productos cargados:', productos); // Para debug
+            mostrarProductos();
+        } catch (error) {
+            console.error('Error cargando productos:', error);
+            mostrarProductos(); // Mostrar productos vacíos o de ejemplo
+        }
+    }
+
+    function mostrarProductos(productosFiltrados = null) {
+        const lista = document.getElementById('listaProductos');
+        const productosAMostrar = productosFiltrados || productos;
+        
+        if (!productosAMostrar || productosAMostrar.length === 0) {
+            lista.innerHTML = `
+                <div class="no-products">
+                    <p>No hay productos disponibles en este momento</p>
+                    <p>Intenta recargar la página o contactar al administrador</p>
+                </div>
+            `;
+            return;
+        }
+        
+        lista.innerHTML = productosAMostrar.map(producto => `
+            <div class="product-card" data-categoria="${producto.categoria}" data-precio="${producto.precio}">
+                <div class="product-header">
+                    <h4>${producto.nombre}</h4>
+                    <span class="product-badge ${producto.cantidad > 0 ? 'disponible' : 'agotado'}">
+                        ${producto.cantidad > 0 ? '🟢 Disponible' : '🔴 Agotado'}
+                    </span>
+                </div>
+                
+                <div class="product-details">
+                    <div class="detail">
+                        <strong>Categoría:</strong> 
+                        <span class="categoria">${producto.categoria}</span>
+                    </div>
+                    <div class="detail">
+                        <strong>Precio:</strong> 
+                        <span class="precio">$${producto.precio}/kg</span>
+                    </div>
+                    <div class="detail">
+                        <strong>Disponible:</strong> 
+                        <span class="cantidad">${producto.cantidad} kg</span>
+                    </div>
+                    <div class="detail">
+                        <strong>Agricultor:</strong> 
+                        <span class="agricultor">${producto.agricultor || 'AgroTec'}</span>
                     </div>
                 </div>
-            </section>
-
-            <!-- Filtros y búsqueda -->
-            <section class="filters-section">
-                <div class="filters-grid">
-                    <div class="search-box">
-                        <input type="text" id="buscarProducto" placeholder="🔍 Buscar productos..." 
-                               onkeyup="filtrarProductos()">
+                
+                ${producto.descripcion ? `
+                    <div class="product-description">
+                        <p>${producto.descripcion}</p>
                     </div>
-                    <div class="filter-select">
-                        <select id="filtroCategoria" onchange="filtrarProductos()">
-                            <option value="todos">Todas las categorías</option>
-                            <option value="frutas">Frutas</option>
-                            <option value="verduras">Verduras</option>
-                            <option value="granos">Granos</option>
-                            <option value="hortalizas">Hortalizas</option>
-                        </select>
-                    </div>
-                    <div class="filter-select">
-                        <select id="filtroPrecio" onchange="filtrarProductos()">
-                            <option value="todos">Cualquier precio</option>
-                            <option value="0-2">$0 - $2</option>
-                            <option value="2-5">$2 - $5</option>
-                            <option value="5-10">$5 - $10</option>
-                            <option value="10+">$10+</option>
-                        </select>
-                    </div>
+                ` : ''}
+                
+                <div class="product-actions">
+                    <button class="btn btn-small" onclick="verDetallesProducto(${producto.id})">
+                        👁️ Ver Detalles
+                    </button>
+                    <button class="btn btn-primary btn-small" 
+                            onclick="agregarAlCarrito(${producto.id})"
+                            ${producto.cantidad === 0 ? 'disabled' : ''}>
+                        🛒 Agregar al Carrito
+                    </button>
                 </div>
-            </section>
-
-            <!-- Lista de productos -->
-            <section class="products-list">
-                <div id="listaProductos" class="products-container">
-                    <div class="loading">🔄 Cargando productos disponibles...</div>
-                </div>
-            </section>
-        </main>
-    </div>
-
-    <!-- Modal de detalles del producto -->
-    <div id="modalProducto" class="modal" style="display: none;">
-        <div class="modal-content">
-            <span class="close" onclick="cerrarModal()">&times;</span>
-            <div id="modalContenido">
-                <!-- Contenido dinámico del producto -->
             </div>
-        </div>
-    </div>
+        `).join('');
+    }
 
-    <script src="../js/auth.js"></script>
-    <script src="../js/cliente.js"></script>
-    <script>
-        let productos = [];
-        let carrito = JSON.parse(localStorage.getItem('carrito')) || [];
+    function agregarAlCarrito(id) {
+        const producto = productos.find(p => p.id === id);
+        if (producto) {
+            const agregado = clienteManager.agregarAlCarrito(producto);
+            if (agregado) {
+                // El mensaje ya se muestra en ClienteManager
+            }
+        }
+    }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            // Verificar autenticación
-            const usuario = JSON.parse(localStorage.getItem('usuario'));
-            if (!usuario || usuario.rol !== 'cliente') {
-                window.location.href = '/login.html';
-                return;
+    function filtrarProductos() {
+        const busqueda = document.getElementById('buscarProducto').value.toLowerCase();
+        const categoria = document.getElementById('filtroCategoria').value;
+        const rangoPrecio = document.getElementById('filtroPrecio').value;
+        
+        let productosFiltrados = productos.filter(producto => {
+            // Filtro por búsqueda
+            const coincideBusqueda = producto.nombre.toLowerCase().includes(busqueda) ||
+                                   (producto.descripcion && producto.descripcion.toLowerCase().includes(busqueda)) ||
+                                   (producto.agricultor && producto.agricultor.toLowerCase().includes(busqueda));
+            
+            // Filtro por categoría
+            const coincideCategoria = categoria === 'todos' || producto.categoria === categoria;
+            
+            // Filtro por precio
+            let coincidePrecio = true;
+            if (rangoPrecio !== 'todos') {
+                const [min, max] = rangoPrecio.split('-').map(val => val === '+' ? Infinity : parseFloat(val));
+                coincidePrecio = producto.precio >= min && (max === Infinity || producto.precio <= max);
             }
             
-            actualizarContadorCarrito();
-            cargarProductosDisponibles();
+            return coincideBusqueda && coincideCategoria && coincidePrecio;
         });
+        
+        mostrarProductos(productosFiltrados);
+    }
 
-        async function cargarProductosDisponibles() {
-            try {
-                // Usar el endpoint real de tu API
-                const response = await fetch('/productos');
-                const productosData = await response.json();
-                
-                // Ajustar según la estructura de tu API
-                productos = productosData.productos || productosData;
-                mostrarProductos();
-            } catch (error) {
-                console.error('Error cargando productos:', error);
-                // Datos de ejemplo como fallback
-                productos = [
-                    {
-                        id: 1,
-                        nombre: "Tomates Orgánicos",
-                        categoria: "verduras",
-                        precio: 2.5,
-                        cantidad: 50,
-                        descripcion: "Tomates frescos cultivados orgánicamente",
-                        agricultor: "Juan Agricultor",
-                        imagen: ""
-                    },
-                    {
-                        id: 3, 
-                        nombre: "Zanahorias Frescas",
-                        categoria: "verduras",
-                        precio: 1.8,
-                        cantidad: 30,
-                        descripcion: "Zanahorias dulces y crujientes",
-                        agricultor: "María Productora",
-                        imagen: ""
-                    }
-                ];
-                mostrarProductos();
-            }
-        }
-
-        function mostrarProductos(productosFiltrados = null) {
-            const lista = document.getElementById('listaProductos');
-            const productosAMostrar = productosFiltrados || productos;
-            
-            if (productosAMostrar.length === 0) {
-                lista.innerHTML = `
-                    <div class="no-products">
-                        <p>No hay productos que coincidan con tu búsqueda</p>
-                        <p>Intenta con otros filtros o términos de búsqueda</p>
+    function verDetallesProducto(id) {
+        const producto = productos.find(p => p.id === id);
+        if (producto) {
+            document.getElementById('modalContenido').innerHTML = `
+                <h3>${producto.nombre}</h3>
+                <div class="product-details-modal">
+                    <div class="detail-row">
+                        <strong>Categoría:</strong> ${producto.categoria}
                     </div>
-                `;
-                return;
-            }
-            
-            lista.innerHTML = productosAMostrar.map(producto => `
-                <div class="product-card" data-categoria="${producto.categoria}" data-precio="${producto.precio}">
-                    <div class="product-header">
-                        <h4>${producto.nombre}</h4>
-                        <span class="product-badge ${producto.cantidad > 0 ? 'disponible' : 'agotado'}">
-                            ${producto.cantidad > 0 ? '🟢 Disponible' : '🔴 Agotado'}
-                        </span>
+                    <div class="detail-row">
+                        <strong>Precio:</strong> $${producto.precio}/kg
                     </div>
-                    
-                    <div class="product-details">
-                        <div class="detail">
-                            <strong>Categoría:</strong> 
-                            <span class="categoria">${producto.categoria}</span>
-                        </div>
-                        <div class="detail">
-                            <strong>Precio:</strong> 
-                            <span class="precio">$${producto.precio}/kg</span>
-                        </div>
-                        <div class="detail">
-                            <strong>Disponible:</strong> 
-                            <span class="cantidad">${producto.cantidad} kg</span>
-                        </div>
-                        <div class="detail">
-                            <strong>Agricultor:</strong> 
-                            <span class="agricultor">${producto.agricultor || 'AgroTec'}</span>
-                        </div>
+                    <div class="detail-row">
+                        <strong>Disponible:</strong> ${producto.cantidad} kg
                     </div>
-                    
+                    <div class="detail-row">
+                        <strong>Agricultor:</strong> ${producto.agricultor || 'AgroTec'}
+                    </div>
                     ${producto.descripcion ? `
-                        <div class="product-description">
-                            <p>${producto.descripcion}</p>
-                        </div>
+                    <div class="detail-row">
+                        <strong>Descripción:</strong> 
+                        <p>${producto.descripcion}</p>
+                    </div>
                     ` : ''}
-                    
-                    <div class="product-actions">
-                        <button class="btn btn-small" onclick="verDetallesProducto(${producto.id})">
-                            👁️ Ver Detalles
-                        </button>
-                        <button class="btn btn-primary btn-small" 
-                                onclick="agregarAlCarrito(${producto.id})"
-                                ${producto.cantidad === 0 ? 'disabled' : ''}>
-                            🛒 Agregar al Carrito
-                        </button>
-                    </div>
                 </div>
-            `).join('');
+                <div class="modal-actions">
+                    <button class="btn btn-primary" 
+                            onclick="agregarAlCarrito(${producto.id}); cerrarModal()"
+                            ${producto.cantidad === 0 ? 'disabled' : ''}>
+                        🛒 Agregar al Carrito
+                    </button>
+                    <button class="btn btn-secondary" onclick="cerrarModal()">Cerrar</button>
+                </div>
+            `;
+            document.getElementById('modalProducto').style.display = 'block';
         }
+    }
 
-        function filtrarProductos() {
-            const busqueda = document.getElementById('buscarProducto').value.toLowerCase();
-            const categoria = document.getElementById('filtroCategoria').value;
-            const rangoPrecio = document.getElementById('filtroPrecio').value;
-            
-            let productosFiltrados = productos.filter(producto => {
-                // Filtro por búsqueda
-                const coincideBusqueda = producto.nombre.toLowerCase().includes(busqueda) ||
-                                       producto.descripcion?.toLowerCase().includes(busqueda) ||
-                                       producto.agricultor?.toLowerCase().includes(busqueda);
-                
-                // Filtro por categoría
-                const coincideCategoria = categoria === 'todos' || producto.categoria === categoria;
-                
-                // Filtro por precio
-                let coincidePrecio = true;
-                if (rangoPrecio !== 'todos') {
-                    const [min, max] = rangoPrecio.split('-').map(val => val === '+' ? Infinity : parseFloat(val));
-                    coincidePrecio = producto.precio >= min && (max === Infinity || producto.precio <= max);
-                }
-                
-                return coincideBusqueda && coincideCategoria && coincidePrecio;
-            });
-            
-            mostrarProductos(productosFiltrados);
-        }
+    function cerrarModal() {
+        document.getElementById('modalProducto').style.display = 'none';
+    }
 
-        function verDetallesProducto(id) {
-            const producto = productos.find(p => p.id === id);
-            if (producto) {
-                document.getElementById('modalContenido').innerHTML = `
-                    <h3>${producto.nombre}</h3>
-                    <div class="product-details-modal">
-                        <div class="detail-row">
-                            <strong>Categoría:</strong> ${producto.categoria}
-                        </div>
-                        <div class="detail-row">
-                            <strong>Precio:</strong> $${producto.precio}/kg
-                        </div>
-                        <div class="detail-row">
-                            <strong>Disponible:</strong> ${producto.cantidad} kg
-                        </div>
-                        <div class="detail-row">
-                            <strong>Agricultor:</strong> ${producto.agricultor || 'AgroTec'}
-                        </div>
-                        ${producto.descripcion ? `
-                        <div class="detail-row">
-                            <strong>Descripción:</strong> 
-                            <p>${producto.descripcion}</p>
-                        </div>
-                        ` : ''}
-                    </div>
-                    <div class="modal-actions">
-                        <button class="btn btn-primary" 
-                                onclick="agregarAlCarrito(${producto.id}); cerrarModal()"
-                                ${producto.cantidad === 0 ? 'disabled' : ''}>
-                            🛒 Agregar al Carrito
-                        </button>
-                        <button class="btn btn-secondary" onclick="cerrarModal()">Cerrar</button>
-                    </div>
-                `;
-                document.getElementById('modalProducto').style.display = 'block';
-            }
+    // Cerrar modal al hacer clic fuera
+    window.onclick = function(event) {
+        const modal = document.getElementById('modalProducto');
+        if (event.target === modal) {
+            cerrarModal();
         }
-
-        function agregarAlCarrito(id) {
-            const producto = productos.find(p => p.id === id);
-            if (producto && producto.cantidad > 0) {
-                const itemExistente = carrito.find(item => item.id === id);
-                
-                if (itemExistente) {
-                    itemExistente.cantidad += 1;
-                } else {
-                    carrito.push({
-                        id: producto.id,
-                        nombre: producto.nombre,
-                        precio: producto.precio,
-                        cantidad: 1,
-                        agricultor: producto.agricultor
-                    });
-                }
-                
-                localStorage.setItem('carrito', JSON.stringify(carrito));
-                actualizarContadorCarrito();
-                mostrarMensaje(`✅ ${producto.nombre} agregado al carrito`, 'success');
-            }
-        }
-
-        function actualizarContadorCarrito() {
-            const totalItems = carrito.reduce((sum, item) => sum + item.cantidad, 0);
-            document.getElementById('cartCount').textContent = totalItems;
-        }
-
-        function cerrarModal() {
-            document.getElementById('modalProducto').style.display = 'none';
-        }
-
-        function mostrarMensaje(mensaje, tipo = 'success') {
-            // Implementar sistema de mensajes similar al agricultor
-            alert(mensaje); // Temporal
-        }
-
-        // Cerrar modal al hacer clic fuera
-        window.onclick = function(event) {
-            const modal = document.getElementById('modalProducto');
-            if (event.target === modal) {
-                cerrarModal();
-            }
-        }
-    </script>
-
-    <style>
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .cart-badge {
-            background: #e74c3c;
-            color: white;
-            border-radius: 50%;
-            padding: 5px 10px;
-            font-size: 0.9rem;
-            font-weight: bold;
-        }
-
-        .product-actions {
-            display: flex;
-            gap: 10px;
-            justify-content: space-between;
-        }
-
-        .product-details-modal {
-            margin: 20px 0;
-        }
-
-        .detail-row {
-            margin-bottom: 10px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .detail-row:last-child {
-            border-bottom: none;
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-            margin-top: 20px;
-        }
-
-        .product-badge.disponible {
-            background: #d4edda;
-            color: #155724;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.8rem;
-        }
-
-        .product-badge.agotado {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.8rem;
-        }
-    </style>
-</body>
-</html>
+    }
+</script>
