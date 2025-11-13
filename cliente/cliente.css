@@ -1,138 +1,136 @@
-/* ====== CLIENTE - ESTILOS GENERALES ====== */
 body {
-    font-family: 'Poppins', sans-serif;
-    background-color: #f4f6f8;
-    margin: 0;
-    padding: 0;
-    color: #333;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  background: #f7f8fa;
+  color: #333;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
 }
 
 header {
-    background-color: #2a9d8f;
-    color: white;
-    padding: 1rem 2rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  text-align: center;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  padding: 20px;
+  border-radius: 10px;
 }
 
-header h2 {
-    margin: 0;
+header nav {
+  margin-top: 15px;
 }
 
-header button {
-    background-color: white;
-    color: #2a9d8f;
-    border: none;
-    border-radius: 5px;
-    padding: 8px 15px;
-    cursor: pointer;
-    font-weight: 600;
+header nav a {
+  color: white;
+  text-decoration: none;
+  margin: 0 10px;
+  padding: 8px 15px;
+  border-radius: 20px;
+  transition: 0.3s;
 }
 
-header button:hover {
-    background-color: #e9f5f3;
+header nav a.active,
+header nav a:hover {
+  background: white;
+  color: #667eea;
 }
 
-/* ====== PRODUCTOS ====== */
-#listaProductos {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-    padding: 20px;
+.btn-logout {
+  background: white;
+  color: #764ba2;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 15px;
+  cursor: pointer;
 }
 
-.product-card {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    overflow: hidden;
-    transition: transform 0.2s;
+.btn-logout:hover {
+  background: #f1f1f1;
 }
 
-.product-card:hover {
-    transform: scale(1.02);
+main h2 {
+  text-align: center;
+  margin: 30px 0;
+  color: #444;
 }
 
-.product-img {
-    width: 100%;
-    height: 160px;
-    object-fit: contain;
-    background: #f9fafb;
-    padding: 10px;
+/* Productos */
+.productos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
 }
 
-.product-info {
-    padding: 15px;
-    text-align: center;
+.producto-card {
+  background: white;
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  text-align: center;
 }
 
-.product-info h4 {
-    color: #264653;
-    margin-bottom: 5px;
+.producto-card h3 {
+  color: #667eea;
 }
 
-.precio {
-    color: #e76f51;
-    font-weight: bold;
+.producto-card button {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border: none;
+  color: white;
+  border-radius: 20px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: 0.3s;
 }
 
-.btn {
-    background-color: #2a9d8f;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 8px;
-    cursor: pointer;
+.producto-card button:hover {
+  transform: scale(1.05);
 }
 
-.btn:hover {
-    background-color: #21867a;
+/* Carrito */
+.carrito-container {
+  background: white;
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
 }
 
-/* ====== PEDIDOS ====== */
-#listaPedidos {
-    padding: 20px;
+.carrito-item {
+  border-bottom: 1px solid #eee;
+  padding: 10px 0;
 }
 
-.pedido-card {
-    background: white;
-    border-left: 5px solid #2a9d8f;
-    border-radius: 10px;
-    padding: 15px;
-    margin-bottom: 15px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+.carrito-item:last-child {
+  border: none;
 }
 
-.pedido-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.carrito-item button {
+  background: #ff4b5c;
+  border: none;
+  color: white;
+  border-radius: 15px;
+  padding: 5px 10px;
+  cursor: pointer;
 }
 
-.estado {
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-size: 0.9em;
+.carrito-total {
+  margin-top: 20px;
+  text-align: right;
 }
 
-.estado.entregado { background-color: #c8e6c9; color: #256029; }
-.estado.en { background-color: #fff3cd; color: #856404; }
-
-/* ====== ALERTA ====== */
-.alert {
-    position: fixed;
-    bottom: 15px;
-    right: 15px;
-    background-color: #2a9d8f;
-    color: white;
-    padding: 10px 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    animation: aparecer 0.3s ease-in-out;
+.btn-comprar {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  cursor: pointer;
 }
 
-@keyframes aparecer {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+.btn-comprar:hover {
+  background: #218838;
 }
