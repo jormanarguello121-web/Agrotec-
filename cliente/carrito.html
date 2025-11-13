@@ -1,37 +1,615 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AgroTec - Carrito</title>
-  <link rel="stylesheet" href="cliente.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgroTec - Mi Carrito</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="cliente.css">
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>🛒 Mi Carrito</h1>
-      <nav>
-        <a href="/cliente/mercado.html">Mercado</a>
-        <a href="/cliente/carrito.html" class="active">Carrito</a>
-        <button class="btn-logout" onclick="cerrarSesion()">Cerrar Sesión</button>
-      </nav>
-    </header>
+    <div class="container">
+        <header>
+            <h1>🌱 AgroTec</h1>
+            <p>Mi Carrito de Compras</p>
+        </header>
 
-    <main>
-      <div id="carrito-container" class="carrito-container">
-        <!-- Los productos del carrito aparecerán aquí -->
-      </div>
+        <nav class="navbar">
+            <a href="mercado.html" class="nav-link">Marketplace</a>
+            <a href="carrito.html" class="nav-link active">🛒 Carrito</a>
+            <a href="pedidos.html" class="nav-link">📦 Mis Pedidos</a>
+            <a href="calendario.html" class="nav-link">🗓️ Calendario</a>
+            <a href="/" class="nav-link">Salir</a>
+        </nav>
 
-      <div class="carrito-total">
-        <h3>Total: $<span id="total">0</span></h3>
-        <button class="btn-comprar" onclick="finalizarCompra()">Finalizar Compra</button>
-      </div>
-    </main>
-  </div>
+        <main>
+            <!-- Header del Carrito -->
+            <section class="cart-header">
+                <div class="header-content">
+                    <h2>Mi Carrito de Compras</h2>
+                    <div class="cart-summary">
+                        <span id="totalItems">0 productos</span>
+                    </div>
+                </div>
+            </section>
 
-  <script src="cliente.js"></script>
-  <script>
-    document.addEventListener("DOMContentLoaded", mostrarCarrito);
-  </script>
+            <!-- Contenido del Carrito -->
+            <section class="cart-content">
+                <div id="carritoContainer" class="cart-container">
+                    <div class="empty-cart">
+                        <div class="empty-icon">🛒</div>
+                        <h3>Tu carrito está vacío</h3>
+                        <p>Agrega productos del marketplace para comenzar</p>
+                        <button onclick="window.location.href='mercado.html'" class="btn btn-primary">
+                            Ir al Marketplace
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Resumen del Pedido -->
+                <div id="resumenPedido" class="order-summary" style="display: none;">
+                    <div class="summary-card">
+                        <h3>Resumen del Pedido</h3>
+                        
+                        <div class="summary-details">
+                            <div class="summary-row">
+                                <span>Subtotal:</span>
+                                <span id="subtotal">$0.00</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Envío:</span>
+                                <span id="envio">$2.00</span>
+                            </div>
+                            <div class="summary-row total">
+                                <span><strong>Total:</strong></span>
+                                <span id="total" class="total-price">$0.00</span>
+                            </div>
+                        </div>
+
+                        <div class="delivery-info">
+                            <h4>📅 Entrega Estimada</h4>
+                            <p id="fechaEntrega">Cargando...</p>
+                        </div>
+
+                        <div class="summary-actions">
+                            <button class="btn btn-primary btn-large" onclick="procesarPedido()">
+                                ✅ Finalizar Compra
+                            </button>
+                            <button class="btn btn-secondary" onclick="vaciarCarrito()">
+                                🗑️ Vaciar Carrito
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal de confirmación de compra -->
+    <div id="modalConfirmacion" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="cerrarModalConfirmacion()">&times;</span>
+            <div class="confirmation-content">
+                <div class="confirmation-icon">✅</div>
+                <h3>¡Pedido Confirmado!</h3>
+                <div id="detallesPedido">
+                    <!-- Detalles del pedido se cargarán aquí -->
+                </div>
+                <div class="confirmation-actions">
+                    <button class="btn btn-primary" onclick="irAMisPedidos()">
+                        Ver Mis Pedidos
+                    </button>
+                    <button class="btn btn-secondary" onclick="seguirComprando()">
+                        Seguir Comprando
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/cliente.js"></script>
+    <script>
+        let carrito = JSON.parse(localStorage.getItem('carrito')) || [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar autenticación
+            const usuario = JSON.parse(localStorage.getItem('usuario'));
+            if (!usuario || usuario.rol !== 'cliente') {
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            mostrarCarrito();
+            actualizarResumen();
+            calcularFechaEntrega();
+        });
+
+        function mostrarCarrito() {
+            const container = document.getElementById('carritoContainer');
+            const resumen = document.getElementById('resumenPedido');
+
+            if (carrito.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-cart">
+                        <div class="empty-icon">🛒</div>
+                        <h3>Tu carrito está vacío</h3>
+                        <p>Agrega productos del marketplace para comenzar</p>
+                        <button onclick="window.location.href='mercado.html'" class="btn btn-primary">
+                            Ir al Marketplace
+                        </button>
+                    </div>
+                `;
+                resumen.style.display = 'none';
+                return;
+            }
+
+            resumen.style.display = 'block';
+            container.innerHTML = carrito.map(item => `
+                <div class="cart-item" data-id="${item.id}">
+                    <div class="item-info">
+                        <h4>${item.nombre}</h4>
+                        <p class="item-agricultor">🌱 ${item.agricultor || 'Agricultor AgroTec'}</p>
+                        <p class="item-price">$${item.precio} / kg</p>
+                    </div>
+                    
+                    <div class="item-controls">
+                        <div class="quantity-controls">
+                            <button class="btn-quantity" onclick="cambiarCantidad(${item.id}, -1)">-</button>
+                            <span class="quantity">${item.cantidad} kg</span>
+                            <button class="btn-quantity" onclick="cambiarCantidad(${item.id}, 1)">+</button>
+                        </div>
+                        
+                        <div class="item-total">
+                            $${(item.precio * item.cantidad).toFixed(2)}
+                        </div>
+                    </div>
+                    
+                    <button class="btn-remove" onclick="eliminarDelCarrito(${item.id})">
+                        🗑️
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function cambiarCantidad(productoId, cambio) {
+            const item = carrito.find(item => item.id === productoId);
+            if (item) {
+                item.cantidad += cambio;
+                
+                if (item.cantidad <= 0) {
+                    eliminarDelCarrito(productoId);
+                } else {
+                    localStorage.setItem('carrito', JSON.stringify(carrito));
+                    mostrarCarrito();
+                    actualizarResumen();
+                }
+            }
+        }
+
+        function eliminarDelCarrito(productoId) {
+            carrito = carrito.filter(item => item.id !== productoId);
+            localStorage.setItem('carrito', JSON.stringify(carrito));
+            mostrarCarrito();
+            actualizarResumen();
+            mostrarMensaje('Producto eliminado del carrito', 'info');
+        }
+
+        function actualizarResumen() {
+            const subtotal = carrito.reduce((total, item) => total + (item.precio * item.cantidad), 0);
+            const envio = 2.00; // Costo fijo de envío
+            const total = subtotal + envio;
+            const totalItems = carrito.reduce((sum, item) => sum + item.cantidad, 0);
+
+            document.getElementById('subtotal').textContent = `$${subtotal.toFixed(2)}`;
+            document.getElementById('envio').textContent = `$${envio.toFixed(2)}`;
+            document.getElementById('total').textContent = `$${total.toFixed(2)}`;
+            document.getElementById('totalItems').textContent = `${totalItems} producto${totalItems !== 1 ? 's' : ''}`;
+        }
+
+        function calcularFechaEntrega() {
+            const hoy = new Date();
+            const fechaEntrega = new Date(hoy);
+            fechaEntrega.setDate(hoy.getDate() + 3); // Entrega en 3 días
+            
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('fechaEntrega').textContent = fechaEntrega.toLocaleDateString('es-ES', options);
+        }
+
+        function vaciarCarrito() {
+            if (confirm('¿Estás seguro de que quieres vaciar todo el carrito?')) {
+                carrito = [];
+                localStorage.setItem('carrito', JSON.stringify(carrito));
+                mostrarCarrito();
+                actualizarResumen();
+                mostrarMensaje('Carrito vaciado', 'info');
+            }
+        }
+
+        async function procesarPedido() {
+            if (carrito.length === 0) {
+                mostrarMensaje('El carrito está vacío', 'error');
+                return;
+            }
+
+            try {
+                // Simular procesamiento del pedido
+                const pedido = {
+                    id: Date.now(),
+                    fecha: new Date().toISOString(),
+                    items: carrito,
+                    subtotal: carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0),
+                    envio: 2.00,
+                    total: carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0) + 2.00,
+                    estado: 'confirmado'
+                };
+
+                // Guardar pedido en localStorage (luego se integrará con API)
+                const pedidosAnteriores = JSON.parse(localStorage.getItem('pedidos')) || [];
+                pedidosAnteriores.push(pedido);
+                localStorage.setItem('pedidos', JSON.stringify(pedidosAnteriores));
+
+                // Mostrar confirmación
+                mostrarConfirmacionPedido(pedido);
+
+            } catch (error) {
+                console.error('Error procesando pedido:', error);
+                mostrarMensaje('Error al procesar el pedido', 'error');
+            }
+        }
+
+        function mostrarConfirmacionPedido(pedido) {
+            document.getElementById('detallesPedido').innerHTML = `
+                <div class="order-details">
+                    <p><strong>Número de pedido:</strong> #${pedido.id}</p>
+                    <p><strong>Total:</strong> $${pedido.total.toFixed(2)}</p>
+                    <p><strong>Estado:</strong> <span class="estado-confirmado">✅ Confirmado</span></p>
+                    <p><strong>Fecha estimada de entrega:</strong> ${document.getElementById('fechaEntrega').textContent}</p>
+                    
+                    <div class="order-items">
+                        <h4>Productos:</h4>
+                        ${pedido.items.map(item => `
+                            <div class="order-item">
+                                ${item.cantidad} kg de ${item.nombre} - $${(item.precio * item.cantidad).toFixed(2)}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            
+            // Limpiar carrito después de la compra
+            carrito = [];
+            localStorage.setItem('carrito', JSON.stringify(carrito));
+            
+            document.getElementById('modalConfirmacion').style.display = 'block';
+        }
+
+        function irAMisPedidos() {
+            window.location.href = 'pedidos.html';
+        }
+
+        function seguirComprando() {
+            window.location.href = 'mercado.html';
+        }
+
+        function cerrarModalConfirmacion() {
+            document.getElementById('modalConfirmacion').style.display = 'none';
+        }
+
+        function mostrarMensaje(mensaje, tipo = 'success') {
+            // Sistema de mensajes mejorado (similar al agricultor)
+            const mensajeDiv = document.createElement('div');
+            mensajeDiv.className = `mensaje-flotante ${tipo}`;
+            mensajeDiv.textContent = mensaje;
+            mensajeDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 10px;
+                color: white;
+                font-weight: bold;
+                z-index: 1000;
+                animation: slideIn 0.3s ease;
+            `;
+            
+            if (tipo === 'success') mensajeDiv.style.background = '#28a745';
+            if (tipo === 'error') mensajeDiv.style.background = '#dc3545';
+            if (tipo === 'info') mensajeDiv.style.background = '#17a2b8';
+            
+            document.body.appendChild(mensajeDiv);
+            
+            setTimeout(() => {
+                mensajeDiv.remove();
+            }, 3000);
+        }
+
+        // Cerrar modal al hacer clic fuera
+        window.onclick = function(event) {
+            const modal = document.getElementById('modalConfirmacion');
+            if (event.target === modal) {
+                cerrarModalConfirmacion();
+            }
+        }
+    </script>
+
+    <style>
+        .cart-header {
+            margin-bottom: 30px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .cart-summary {
+            background: #f8f9fa;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .cart-content {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+            align-items: start;
+        }
+
+        .cart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .empty-cart {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .cart-item {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 20px;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+            transition: background-color 0.3s ease;
+        }
+
+        .cart-item:hover {
+            background: #f8f9fa;
+        }
+
+        .cart-item:last-child {
+            border-bottom: none;
+        }
+
+        .item-info h4 {
+            margin: 0 0 5px 0;
+            color: #333;
+        }
+
+        .item-agricultor {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .item-price {
+            color: #28a745;
+            font-weight: bold;
+            margin: 5px 0 0 0;
+        }
+
+        .item-controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f8f9fa;
+            border-radius: 20px;
+            padding: 5px;
+        }
+
+        .btn-quantity {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-quantity:hover {
+            background: #e9ecef;
+        }
+
+        .quantity {
+            font-weight: bold;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .item-total {
+            font-weight: bold;
+            color: #333;
+            font-size: 1.1rem;
+            min-width: 80px;
+            text-align: right;
+        }
+
+        .btn-remove {
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-remove:hover {
+            background: #c82333;
+        }
+
+        .order-summary {
+            position: sticky;
+            top: 20px;
+        }
+
+        .summary-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .summary-details {
+            margin: 20px 0;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .summary-row.total {
+            border-bottom: none;
+            font-size: 1.2rem;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid #e9ecef;
+        }
+
+        .total-price {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .delivery-info {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .delivery-info h4 {
+            margin: 0 0 10px 0;
+            color: #0056b3;
+        }
+
+        .summary-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn-large {
+            padding: 15px;
+            font-size: 1.1rem;
+        }
+
+        .confirmation-content {
+            text-align: center;
+        }
+
+        .confirmation-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .order-details {
+            text-align: left;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .order-items {
+            margin-top: 15px;
+        }
+
+        .order-item {
+            padding: 5px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .order-item:last-child {
+            border-bottom: none;
+        }
+
+        .estado-confirmado {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .confirmation-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .cart-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .cart-item {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 15px;
+            }
+            
+            .item-controls {
+                justify-content: center;
+            }
+            
+            .confirmation-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
 </body>
 </html>
