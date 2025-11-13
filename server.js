@@ -458,6 +458,36 @@ app.use((err, req, res, next) => {
     });
 });
 
+// ==========================
+// ENDPOINT: Listar productos desde productos.json
+// ==========================
+const fs = require('fs');
+const path = require('path');
+
+app.get('/productos', (req, res) => {
+  const filePath = path.join(__dirname, 'productos.json');
+
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) {
+      console.error('Error al leer productos.json:', err);
+      return res.status(500).json({ error: 'Error al obtener los productos' });
+    }
+
+    try {
+      const productosData = JSON.parse(data);
+      // Filtramos los productos activos con cantidad > 0
+      const productosDisponibles = productosData.productos.filter(
+        p => p.estado === 'activo' && p.cantidad > 0
+      );
+      res.json(productosDisponibles);
+    } catch (parseError) {
+      console.error('Error al parsear productos.json:', parseError);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  });
+});
+
+
 // Iniciar servidor
 app.listen(PORT, () => {
     console.log(`🚀 Servidor AgroTec ejecutándose en http://localhost:${PORT}`);
