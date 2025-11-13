@@ -67,5 +67,72 @@ header button:hover {
     text-align: center;
 }
 
-.product-in
+.product-info h4 {
+    color: #264653;
+    margin-bottom: 5px;
+}
 
+.precio {
+    color: #e76f51;
+    font-weight: bold;
+}
+
+.btn {
+    background-color: #2a9d8f;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background-color: #21867a;
+}
+
+/* ====== PEDIDOS ====== */
+#listaPedidos {
+    padding: 20px;
+}
+
+.pedido-card {
+    background: white;
+    border-left: 5px solid #2a9d8f;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+.pedido-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.estado {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.9em;
+}
+
+.estado.entregado { background-color: #c8e6c9; color: #256029; }
+.estado.en { background-color: #fff3cd; color: #856404; }
+
+/* ====== ALERTA ====== */
+.alert {
+    position: fixed;
+    bottom: 15px;
+    right: 15px;
+    background-color: #2a9d8f;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    animation: aparecer 0.3s ease-in-out;
+}
+
+@keyframes aparecer {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
