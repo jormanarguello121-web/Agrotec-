@@ -4,6 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AgroTec - Marketplace</title>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌱 AgroTec Marketplace</h1>
+            <p>Productos Frescos Directo del Campo</p>
+        </header>
+
+        <nav class="navbar">
+            <a href="mercado.html" class="nav-link active">🏪 Marketplace</a>
+            <a href="carrito.html" class="nav-link">🛒 Carrito <span id="cartCount" class="cart-badge">0</span></a>
+            <a href="pedidos.html" class="nav-link">📦 Mis Pedidos</a>
+            <a href="calendario.html" class="nav-link">🗓️ Calendario</a>
+            <a href="/login.html" class="nav-link" onclick="localStorage.removeItem('usuario')">🚪 Salir</a>
+        </nav>
+
+        <main>
+            <h2>Nuestros Productos</h2>
+            
+            <!-- Barra de búsqueda -->
+            <div style="margin: 20px 0; text-align: center;">
+                <input type="text" id="buscarProducto" placeholder="🔍 Buscar productos..." 
+                       style="padding: 10px; width: 300px; border: 2px solid #ddd; border-radius: 20px;"
+                       onkeyup="buscarProductos()">
+            </div>
+            
+            <div class="products-grid" id="listaProductos">
+                <!-- Los productos se cargarán aquí -->
+            </div>
+        </main>
+    </div>
+
     <style>
         * {
             margin: 0;
@@ -23,17 +55,17 @@
             margin: 0 auto;
             background: white;
             border-radius: 15px;
-            padding: 20px;
+            padding: 30px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
         
         header {
             text-align: center;
             margin-bottom: 30px;
-            padding: 20px;
+            padding: 30px;
             background: linear-gradient(135deg, #2ecc71, #27ae60);
             color: white;
-            border-radius: 10px;
+            border-radius: 15px;
         }
         
         header h1 {
@@ -52,71 +84,55 @@
         .nav-link {
             color: #333;
             text-decoration: none;
-            padding: 10px 20px;
+            padding: 12px 25px;
             border: 2px solid #667eea;
             border-radius: 25px;
             transition: all 0.3s ease;
+            font-weight: 600;
         }
         
         .nav-link:hover, .nav-link.active {
             background: #667eea;
             color: white;
+            transform: translateY(-2px);
+        }
+        
+        main h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2rem;
         }
         
         .products-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
             margin-top: 30px;
         }
         
         .product-card {
             background: white;
             border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            padding: 20px;
+            border-radius: 15px;
+            padding: 25px;
             transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
         
         .product-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
             border-color: #667eea;
-        }
-        
-        .product-card h3 {
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 1.3rem;
-        }
-        
-        .product-price {
-            font-size: 1.5rem;
-            color: #2ecc71;
-            font-weight: bold;
-            margin: 10px 0;
-        }
-        
-        .product-info {
-            color: #666;
-            margin: 5px 0;
-            font-size: 0.9rem;
-        }
-        
-        .product-description {
-            color: #888;
-            font-size: 0.9rem;
-            margin: 10px 0;
-            line-height: 1.4;
         }
         
         .product-badge {
             display: inline-block;
-            padding: 5px 10px;
-            border-radius: 15px;
+            padding: 8px 15px;
+            border-radius: 20px;
             font-size: 0.8rem;
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
         
         .available {
@@ -129,9 +145,42 @@
             color: #721c24;
         }
         
+        .product-card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+        
+        .product-price {
+            font-size: 1.8rem;
+            color: #2ecc71;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+        
+        .product-info {
+            color: #666;
+            margin: 8px 0;
+            font-size: 0.95rem;
+        }
+        
+        .product-info strong {
+            color: #333;
+        }
+        
+        .product-description {
+            color: #888;
+            font-size: 0.9rem;
+            margin: 15px 0;
+            line-height: 1.5;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
         .btn {
             display: inline-block;
-            padding: 10px 20px;
+            padding: 12px 25px;
             border: none;
             border-radius: 25px;
             cursor: pointer;
@@ -140,6 +189,7 @@
             text-decoration: none;
             text-align: center;
             margin: 5px;
+            font-size: 0.9rem;
         }
         
         .btn-primary {
@@ -163,39 +213,26 @@
             color: white;
         }
         
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+        
         .cart-badge {
             background: #e74c3c;
             color: white;
             border-radius: 50%;
             padding: 5px 10px;
             font-size: 0.8rem;
-            margin-left: 10px;
+            margin-left: 8px;
+        }
+        
+        .product-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
         }
     </style>
-</head>
-<body>
-    <div class="container">
-        <header>
-            <h1>🌱 AgroTec Marketplace</h1>
-            <p>Productos Frescos Directo del Campo</p>
-        </header>
-
-        <nav class="navbar">
-            <a href="mercado.html" class="nav-link active">🏪 Marketplace</a>
-            <a href="carrito.html" class="nav-link">🛒 Carrito <span id="cartCount" class="cart-badge" style="display: none;">0</span></a>
-            <a href="pedidos.html" class="nav-link">📦 Mis Pedidos</a>
-            <a href="calendario.html" class="nav-link">🗓️ Calendario</a>
-            <a href="/login.html" class="nav-link" onclick="localStorage.removeItem('usuario')">🚪 Salir</a>
-        </nav>
-
-        <main>
-            <h2 style="text-align: center; color: #333; margin-bottom: 20px;">Nuestros Productos</h2>
-            
-            <div class="products-grid" id="listaProductos">
-                <!-- Los productos se cargarán aquí -->
-            </div>
-        </main>
-    </div>
 
     <script>
         // ===== DATOS DE PRODUCTOS =====
@@ -259,17 +296,37 @@
                 descripcion: "Fresas rojas y jugosas cultivadas en altura, con un sabor intenso y dulce.",
                 agricultor: "Roberto Fruticultor",
                 estado: "activo"
+            },
+            {
+                id: 7,
+                nombre: "🌽 Maíz Dulce",
+                categoria: "granos",
+                precio: 2.0,
+                cantidad: 40,
+                descripcion: "Maíz dulce y tierno, perfecto para hervir o asar. Recién cosechado.",
+                agricultor: "Luisa Agricultora",
+                estado: "activo"
+            },
+            {
+                id: 8,
+                nombre: "🍋 Limones Orgánicos",
+                categoria: "frutas",
+                precio: 3.0,
+                cantidad: 20,
+                descripcion: "Limones jugosos y aromáticos, cultivados sin pesticidas. Ideal para bebidas.",
+                agricultor: "Diego Citricultor",
+                estado: "activo"
             }
         ];
 
         // ===== INICIALIZACIÓN =====
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Iniciando Marketplace...');
+            console.log('🚀 Marketplace AgroTec - Iniciando...');
             
             // Verificación básica de autenticación
             const usuario = localStorage.getItem('usuario');
             if (!usuario) {
-                alert('Por favor inicia sesión primero');
+                alert('⚠️ Por favor inicia sesión para acceder al marketplace');
                 window.location.href = '/login.html';
                 return;
             }
@@ -278,7 +335,7 @@
             mostrarProductos();
             actualizarContadorCarrito();
             
-            console.log('✅ Marketplace listo con ' + productos.length + ' productos');
+            console.log('✅ Marketplace cargado exitosamente con ' + productos.length + ' productos');
         });
 
         // ===== MOSTRAR PRODUCTOS =====
@@ -286,7 +343,13 @@
             const lista = document.getElementById('listaProductos');
             
             if (productos.length === 0) {
-                lista.innerHTML = '<p style="text-align: center; color: #666; grid-column: 1/-1; padding: 40px;">No hay productos disponibles</p>';
+                lista.innerHTML = `
+                    <div style="text-align: center; color: #666; grid-column: 1/-1; padding: 60px;">
+                        <div style="font-size: 4rem; margin-bottom: 20px;">📦</div>
+                        <h3>No hay productos disponibles</h3>
+                        <p>Vuelve más tarde para ver nuestros productos</p>
+                    </div>
+                `;
                 return;
             }
             
@@ -297,18 +360,20 @@
                     </span>
                     <h3>${producto.nombre}</h3>
                     <div class="product-price">$${producto.precio} / kg</div>
-                    <div class="product-info"><strong>Agricultor:</strong> ${producto.agricultor}</div>
-                    <div class="product-info"><strong>Disponible:</strong> ${producto.cantidad} kg</div>
-                    <div class="product-info"><strong>Categoría:</strong> ${producto.categoria}</div>
+                    <div class="product-info"><strong>👨‍🌾 Agricultor:</strong> ${producto.agricultor}</div>
+                    <div class="product-info"><strong>📦 Disponible:</strong> ${producto.cantidad} kg</div>
+                    <div class="product-info"><strong>📋 Categoría:</strong> ${producto.categoria}</div>
                     <div class="product-description">${producto.descripcion}</div>
-                    <button class="btn btn-primary" 
-                            onclick="agregarAlCarrito(${producto.id})"
-                            ${producto.cantidad === 0 ? 'disabled' : ''}>
-                        🛒 Agregar al Carrito
-                    </button>
-                    <button class="btn btn-secondary" onclick="verDetalles(${producto.id})">
-                        👁️ Ver Detalles
-                    </button>
+                    <div class="product-actions">
+                        <button class="btn btn-primary" 
+                                onclick="agregarAlCarrito(${producto.id})"
+                                ${producto.cantidad === 0 ? 'disabled' : ''}>
+                            🛒 Agregar al Carrito
+                        </button>
+                        <button class="btn btn-secondary" onclick="verDetalles(${producto.id})">
+                            👁️ Ver Detalles
+                        </button>
+                    </div>
                 </div>
             `).join('');
         }
@@ -335,7 +400,11 @@
             
             localStorage.setItem('carrito', JSON.stringify(carrito));
             actualizarContadorCarrito();
-            alert('✅ ' + producto.nombre + ' agregado al carrito');
+            
+            // Mostrar mensaje de confirmación
+            alert('✅ ' + producto.nombre + ' agregado al carrito\n\n' +
+                  '💰 Precio: $' + producto.precio + '/kg\n' +
+                  '📦 Ahora en carrito: ' + (itemExistente ? itemExistente.cantidad : 1) + ' kg');
         }
 
         function actualizarContadorCarrito() {
@@ -355,12 +424,17 @@
             if (!producto) return;
             
             const detalles = `
-                🍅 <strong>${producto.nombre}</strong>
-                💰 <strong>Precio:</strong> $${producto.precio}/kg
-                📦 <strong>Disponible:</strong> ${producto.cantidad} kg
-                👨‍🌾 <strong>Agricultor:</strong> ${producto.agricultor}
-                📋 <strong>Categoría:</strong> ${producto.categoria}
-                📝 <strong>Descripción:</strong> ${producto.descripcion}
+🍅 ${producto.nombre}
+
+💰 PRECIO: $${producto.precio} por kilogramo
+📦 DISPONIBLE: ${producto.cantidad} kg
+👨‍🌾 AGRICULTOR: ${producto.agricultor}
+📋 CATEGORÍA: ${producto.categoria}
+
+📝 DESCRIPCIÓN:
+${producto.descripcion}
+
+${producto.cantidad > 0 ? '🟢 PRODUCTO DISPONIBLE' : '🔴 PRODUCTO AGOTADO'}
             `;
             
             alert(detalles);
@@ -369,16 +443,32 @@
         // ===== BUSCAR PRODUCTOS =====
         function buscarProductos() {
             const busqueda = document.getElementById('buscarProducto').value.toLowerCase();
+            
+            if (busqueda.trim() === '') {
+                mostrarProductos();
+                return;
+            }
+            
             const productosFiltrados = productos.filter(producto => 
                 producto.nombre.toLowerCase().includes(busqueda) ||
                 producto.descripcion.toLowerCase().includes(busqueda) ||
-                producto.agricultor.toLowerCase().includes(busqueda)
+                producto.agricultor.toLowerCase().includes(busqueda) ||
+                producto.categoria.toLowerCase().includes(busqueda)
             );
             
             const lista = document.getElementById('listaProductos');
             
             if (productosFiltrados.length === 0) {
-                lista.innerHTML = '<p style="text-align: center; color: #666; grid-column: 1/-1; padding: 40px;">No se encontraron productos</p>';
+                lista.innerHTML = `
+                    <div style="text-align: center; color: #666; grid-column: 1/-1; padding: 60px;">
+                        <div style="font-size: 4rem; margin-bottom: 20px;">🔍</div>
+                        <h3>No se encontraron productos</h3>
+                        <p>Intenta con otros términos de búsqueda</p>
+                        <button class="btn btn-secondary" onclick="mostrarProductos()" style="margin-top: 15px;">
+                            Mostrar Todos los Productos
+                        </button>
+                    </div>
+                `;
                 return;
             }
             
@@ -389,14 +479,16 @@
                     </span>
                     <h3>${producto.nombre}</h3>
                     <div class="product-price">$${producto.precio} / kg</div>
-                    <div class="product-info"><strong>Agricultor:</strong> ${producto.agricultor}</div>
-                    <div class="product-info"><strong>Disponible:</strong> ${producto.cantidad} kg</div>
+                    <div class="product-info"><strong>👨‍🌾 Agricultor:</strong> ${producto.agricultor}</div>
+                    <div class="product-info"><strong>📦 Disponible:</strong> ${producto.cantidad} kg</div>
                     <div class="product-description">${producto.descripcion}</div>
-                    <button class="btn btn-primary" 
-                            onclick="agregarAlCarrito(${producto.id})"
-                            ${producto.cantidad === 0 ? 'disabled' : ''}>
-                        🛒 Agregar al Carrito
-                    </button>
+                    <div class="product-actions">
+                        <button class="btn btn-primary" 
+                                onclick="agregarAlCarrito(${producto.id})"
+                                ${producto.cantidad === 0 ? 'disabled' : ''}>
+                            🛒 Agregar al Carrito
+                        </button>
+                    </div>
                 </div>
             `).join('');
         }
