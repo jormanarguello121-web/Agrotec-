@@ -1,73 +1,106 @@
-<script src="../js/auth.js"></script>
-<script src="../js/cliente.js"></script>
-<script>
-    let productos = [];
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgroTec - Marketplace</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="cliente.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌱 AgroTec</h1>
+            <p>Marketplace - Productos Frescos</p>
+        </header>
 
-    document.addEventListener('DOMContentLoaded', function() {
-        // Verificar autenticación
-        const usuario = JSON.parse(localStorage.getItem('usuario'));
-        if (!usuario || usuario.rol !== 'cliente') {
-            window.location.href = '/login.html';
-            return;
-        }
-        
-        cargarProductosDisponibles();
-    });
+        <nav class="navbar">
+            <a href="mercado.html" class="nav-link active">Marketplace</a>
+            <a href="carrito.html" class="nav-link">🛒 Carrito</a>
+            <a href="pedidos.html" class="nav-link">📦 Mis Pedidos</a>
+            <a href="calendario.html" class="nav-link">🗓️ Calendario</a>
+            <a href="/" class="nav-link" onclick="localStorage.removeItem('usuario');">Salir</a>
+        </nav>
 
-    async function cargarProductosDisponibles() {
-        try {
-            console.log('🔄 Cargando productos...');
-            
-            // Intentar cargar desde la API
-            const response = await fetch('/productos');
-            
-            if (!response.ok) {
-                throw new Error(`Error HTTP: ${response.status}`);
-            }
-            
-            const data = await response.json();
-            console.log('📦 Respuesta de la API:', data);
-            
-            // Diferentes estructuras posibles de la API
-            if (data.productos && Array.isArray(data.productos)) {
-                productos = data.productos;
-            } else if (Array.isArray(data)) {
-                productos = data;
-            } else {
-                console.warn('Estructura de datos inesperada:', data);
-                productos = [];
-            }
-            
-        } catch (error) {
-            console.error('❌ Error cargando productos:', error);
-            // Usar datos de ejemplo como fallback
-            productos = obtenerProductosEjemplo();
-        }
-        
-        console.log('🎯 Productos a mostrar:', productos);
-        mostrarProductos();
-    }
+        <main>
+            <!-- Header del Marketplace -->
+            <section class="products-header">
+                <div class="header-content">
+                    <h2>Productos Disponibles</h2>
+                    <div class="header-actions">
+                        <span class="cart-badge" id="cartCount">0</span>
+                    </div>
+                </div>
+            </section>
 
-    function obtenerProductosEjemplo() {
-        return [
+            <!-- Filtros y búsqueda -->
+            <section class="filters-section">
+                <div class="filters-grid">
+                    <div class="search-box">
+                        <input type="text" id="buscarProducto" placeholder="🔍 Buscar productos..." 
+                               onkeyup="filtrarProductos()">
+                    </div>
+                    <div class="filter-select">
+                        <select id="filtroCategoria" onchange="filtrarProductos()">
+                            <option value="todos">Todas las categorías</option>
+                            <option value="frutas">Frutas</option>
+                            <option value="verduras">Verduras</option>
+                            <option value="granos">Granos</option>
+                            <option value="hortalizas">Hortalizas</option>
+                        </select>
+                    </div>
+                    <div class="filter-select">
+                        <select id="filtroPrecio" onchange="filtrarProductos()">
+                            <option value="todos">Cualquier precio</option>
+                            <option value="0-2">$0 - $2</option>
+                            <option value="2-5">$2 - $5</option>
+                            <option value="5-10">$5 - $10</option>
+                            <option value="10+">$10+</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Lista de productos -->
+            <section class="products-list">
+                <div id="listaProductos" class="products-container">
+                    <div class="loading">🔄 Cargando productos disponibles...</div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal de detalles del producto -->
+    <div id="modalProducto" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="cerrarModal()">&times;</span>
+            <div id="modalContenido">
+                <!-- Contenido dinámico del producto -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DATOS DE PRODUCTOS =====
+        const productos = [
             {
                 id: 1,
                 nombre: "🍅 Tomates Orgánicos",
                 categoria: "verduras",
                 precio: 2.5,
                 cantidad: 50,
-                descripcion: "Tomates frescos cultivados orgánicamente sin pesticidas",
+                descripcion: "Tomates frescos cultivados orgánicamente sin pesticidas químicos. Ideal para ensaladas y salsas.",
                 agricultor: "Juan Agricultor",
                 imagen: "",
                 estado: "activo"
             },
             {
                 id: 2,
-                nombre: "🥑 Aguacates Hass",
-                categoria: "frutas", 
+                nombre: "🥑 Aguacates Hass", 
+                categoria: "frutas",
                 precio: 4.0,
                 cantidad: 0,
-                descripcion: "Aguacates de primera calidad para exportación",
+                descripcion: "Aguacates de primera calidad, perfectos para guacamole o tostadas.",
                 agricultor: "Pedro Productor",
                 imagen: "",
                 estado: "agotado"
@@ -78,8 +111,8 @@
                 categoria: "verduras",
                 precio: 1.8,
                 cantidad: 30,
-                descripcion: "Zanahorias dulces y crujientes recién cosechadas",
-                agricultor: "María Agricultora",
+                descripcion: "Zanahorias dulces y crujientes, recién cosechadas de nuestra huerta.",
+                agricultor: "María Agricultora", 
                 imagen: "",
                 estado: "activo"
             },
@@ -89,7 +122,7 @@
                 categoria: "frutas",
                 precio: 1.2,
                 cantidad: 25,
-                descripcion: "Bananos naturales en su punto perfecto de maduración",
+                descripcion: "Bananos naturales en su punto perfecto de maduración, dulces y nutritivos.",
                 agricultor: "Carlos Campesino",
                 imagen: "",
                 estado: "activo"
@@ -97,10 +130,10 @@
             {
                 id: 5,
                 nombre: "🥦 Brócoli Orgánico",
-                categoria: "verduras",
+                categoria: "verduras", 
                 precio: 3.5,
                 cantidad: 15,
-                descripcion: "Brócoli fresco cultivado de manera sostenible",
+                descripcion: "Brócoli fresco cultivado de manera sostenible, rico en vitaminas y minerales.",
                 agricultor: "Ana Agroecológica",
                 imagen: "",
                 estado: "activo"
@@ -111,91 +144,154 @@
                 categoria: "frutas",
                 precio: 5.0,
                 cantidad: 8,
-                descripcion: "Fresas rojas y jugosas cultivadas en altura",
+                descripcion: "Fresas rojas y jugosas cultivadas en altura, con un sabor intenso y dulce.",
                 agricultor: "Roberto Fruticultor",
+                imagen: "",
+                estado: "activo"
+            },
+            {
+                id: 7,
+                nombre: "🌽 Maíz Dulce",
+                categoria: "granos",
+                precio: 2.0,
+                cantidad: 40,
+                descripcion: "Maíz dulce y tierno, perfecto para hervir o asar.",
+                agricultor: "Luisa Agricultora",
+                imagen: "",
+                estado: "activo"
+            },
+            {
+                id: 8,
+                nombre: "🍋 Limones Orgánicos",
+                categoria: "frutas",
+                precio: 3.0,
+                cantidad: 20,
+                descripcion: "Limones jugosos y aromáticos, cultivados sin pesticidas.",
+                agricultor: "Diego Citricultor",
                 imagen: "",
                 estado: "activo"
             }
         ];
-    }
 
-    function mostrarProductos(productosFiltrados = null) {
-        const lista = document.getElementById('listaProductos');
-        const productosAMostrar = productosFiltrados || productos;
-        
-        console.log('🖥️ Mostrando productos:', productosAMostrar);
-        
-        if (!productosAMostrar || productosAMostrar.length === 0) {
-            lista.innerHTML = `
-                <div class="no-products" style="text-align: center; padding: 40px; color: #666;">
-                    <div style="font-size: 4rem; margin-bottom: 20px;">📦</div>
-                    <h3>No hay productos disponibles</h3>
-                    <p>No se encontraron productos en el marketplace</p>
-                    <button onclick="location.reload()" class="btn btn-primary" style="margin-top: 15px;">
-                        🔄 Recargar Página
-                    </button>
-                </div>
-            `;
-            return;
-        }
-        
-        lista.innerHTML = productosAMostrar.map(producto => `
-            <div class="product-card" data-categoria="${producto.categoria}" data-precio="${producto.precio}">
-                <div class="product-header">
-                    <h4>${producto.nombre}</h4>
-                    <span class="product-badge ${producto.cantidad > 0 ? 'disponible' : 'agotado'}">
-                        ${producto.cantidad > 0 ? '🟢 Disponible' : '🔴 Agotado'}
-                    </span>
-                </div>
-                
-                <div class="product-details">
-                    <div class="detail">
-                        <strong>Categoría:</strong> 
-                        <span class="categoria" style="text-transform: capitalize;">${producto.categoria}</span>
+        // ===== INICIALIZACIÓN =====
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('✅ Página cargada - Mostrando productos de ejemplo');
+            
+            // Verificar autenticación simple
+            const usuario = JSON.parse(localStorage.getItem('usuario'));
+            if (!usuario || usuario.rol !== 'cliente') {
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            // Mostrar productos inmediatamente
+            mostrarProductos();
+            actualizarContadorCarrito();
+            
+            console.log('🎯 Productos cargados:', productos.length);
+        });
+
+        // ===== MOSTRAR PRODUCTOS =====
+        function mostrarProductos(productosFiltrados = null) {
+            const lista = document.getElementById('listaProductos');
+            const productosAMostrar = productosFiltrados || productos;
+            
+            console.log('🖥️ Mostrando productos:', productosAMostrar.length);
+            
+            if (productosAMostrar.length === 0) {
+                lista.innerHTML = `
+                    <div class="no-products">
+                        <div style="font-size: 4rem; margin-bottom: 20px;">🔍</div>
+                        <h3>No se encontraron productos</h3>
+                        <p>Intenta con otros filtros de búsqueda</p>
+                        <button onclick="mostrarProductos()" class="btn btn-secondary">
+                            Mostrar Todos
+                        </button>
                     </div>
-                    <div class="detail">
-                        <strong>Precio:</strong> 
-                        <span class="precio" style="color: #28a745; font-weight: bold;">$${producto.precio}/kg</span>
+                `;
+                return;
+            }
+            
+            lista.innerHTML = productosAMostrar.map(producto => `
+                <div class="product-card" data-categoria="${producto.categoria}" data-precio="${producto.precio}">
+                    <div class="product-header">
+                        <h4>${producto.nombre}</h4>
+                        <span class="product-badge ${producto.cantidad > 0 ? 'disponible' : 'agotado'}">
+                            ${producto.cantidad > 0 ? '🟢 Disponible' : '🔴 Agotado'}
+                        </span>
                     </div>
-                    <div class="detail">
-                        <strong>Disponible:</strong> 
-                        <span class="cantidad" style="font-weight: bold;">${producto.cantidad} kg</span>
+                    
+                    <div class="product-details">
+                        <div class="detail">
+                            <strong>Categoría:</strong> 
+                            <span class="categoria">${producto.categoria}</span>
+                        </div>
+                        <div class="detail">
+                            <strong>Precio:</strong> 
+                            <span class="precio">$${producto.precio}/kg</span>
+                        </div>
+                        <div class="detail">
+                            <strong>Disponible:</strong> 
+                            <span class="cantidad">${producto.cantidad} kg</span>
+                        </div>
+                        <div class="detail">
+                            <strong>Agricultor:</strong> 
+                            <span class="agricultor">${producto.agricultor}</span>
+                        </div>
                     </div>
-                    <div class="detail">
-                        <strong>Agricultor:</strong> 
-                        <span class="agricultor" style="color: #666;">${producto.agricultor || 'Agricultor AgroTec'}</span>
-                    </div>
-                </div>
-                
-                ${producto.descripcion ? `
+                    
                     <div class="product-description">
-                        <p style="margin: 0; color: #666; font-size: 0.95rem; line-height: 1.4;">${producto.descripcion}</p>
+                        <p>${producto.descripcion}</p>
                     </div>
-                ` : ''}
-                
-                <div class="product-actions">
-                    <button class="btn btn-small" onclick="verDetallesProducto(${producto.id})" style="background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer;">
-                        👁️ Ver Detalles
-                    </button>
-                    <button class="btn btn-primary btn-small" 
-                            onclick="agregarAlCarritoDesdeMarketplace(${producto.id})"
-                            ${producto.cantidad === 0 ? 'disabled' : ''}
-                            style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer; ${producto.cantidad === 0 ? 'opacity: 0.6; cursor: not-allowed;' : ''}">
-                        🛒 Agregar al Carrito
-                    </button>
+                    
+                    <div class="product-actions">
+                        <button class="btn btn-small" onclick="verDetallesProducto(${producto.id})">
+                            👁️ Ver Detalles
+                        </button>
+                        <button class="btn btn-primary btn-small" 
+                                onclick="agregarAlCarrito(${producto.id})"
+                                ${producto.cantidad === 0 ? 'disabled' : ''}>
+                            🛒 Agregar al Carrito
+                        </button>
+                    </div>
                 </div>
-            </div>
-        `).join('');
-    }
+            `).join('');
+            
+            console.log('✅ Productos renderizados en el DOM');
+        }
 
-    function agregarAlCarritoDesdeMarketplace(id) {
-        const producto = productos.find(p => p.id === id);
-        if (producto && producto.cantidad > 0) {
-            // Usar el ClienteManager si está disponible
-            if (window.clienteManager) {
-                clienteManager.agregarAlCarrito(producto);
-            } else {
-                // Fallback: manejo local del carrito
+        // ===== FILTRADO =====
+        function filtrarProductos() {
+            const busqueda = document.getElementById('buscarProducto').value.toLowerCase();
+            const categoria = document.getElementById('filtroCategoria').value;
+            const rangoPrecio = document.getElementById('filtroPrecio').value;
+            
+            let productosFiltrados = productos.filter(producto => {
+                // Filtro por búsqueda
+                const coincideBusqueda = producto.nombre.toLowerCase().includes(busqueda) ||
+                                       producto.descripcion.toLowerCase().includes(busqueda) ||
+                                       producto.agricultor.toLowerCase().includes(busqueda);
+                
+                // Filtro por categoría
+                const coincideCategoria = categoria === 'todos' || producto.categoria === categoria;
+                
+                // Filtro por precio
+                let coincidePrecio = true;
+                if (rangoPrecio !== 'todos') {
+                    const [min, max] = rangoPrecio.split('-').map(val => val === '+' ? Infinity : parseFloat(val));
+                    coincidePrecio = producto.precio >= min && (max === Infinity || producto.precio <= max);
+                }
+                
+                return coincideBusqueda && coincideCategoria && coincidePrecio;
+            });
+            
+            mostrarProductos(productosFiltrados);
+        }
+
+        // ===== CARRITO =====
+        function agregarAlCarrito(id) {
+            const producto = productos.find(p => p.id === id);
+            if (producto && producto.cantidad > 0) {
                 let carrito = JSON.parse(localStorage.getItem('carrito')) || [];
                 const itemExistente = carrito.find(item => item.id === id);
                 
@@ -212,107 +308,346 @@
                 }
                 
                 localStorage.setItem('carrito', JSON.stringify(carrito));
+                actualizarContadorCarrito();
                 
                 // Mostrar mensaje
-                alert(`✅ ${producto.nombre} agregado al carrito`);
-                
-                // Actualizar contador
-                actualizarContadorCarrito();
+                mostrarMensaje(`✅ ${producto.nombre} agregado al carrito`);
             }
         }
-    }
 
-    function actualizarContadorCarrito() {
-        const carrito = JSON.parse(localStorage.getItem('carrito')) || [];
-        const totalItems = carrito.reduce((sum, item) => sum + item.cantidad, 0);
-        const cartCountElement = document.getElementById('cartCount');
-        if (cartCountElement) {
-            cartCountElement.textContent = totalItems;
+        function actualizarContadorCarrito() {
+            const carrito = JSON.parse(localStorage.getItem('carrito')) || [];
+            const totalItems = carrito.reduce((sum, item) => sum + item.cantidad, 0);
+            const cartCountElement = document.getElementById('cartCount');
+            if (cartCountElement) {
+                cartCountElement.textContent = totalItems;
+                cartCountElement.style.display = totalItems > 0 ? 'block' : 'none';
+            }
         }
-    }
 
-    function filtrarProductos() {
-        const busqueda = document.getElementById('buscarProducto').value.toLowerCase();
-        const categoria = document.getElementById('filtroCategoria').value;
-        const rangoPrecio = document.getElementById('filtroPrecio').value;
-        
-        let productosFiltrados = productos.filter(producto => {
-            // Filtro por búsqueda
-            const coincideBusqueda = producto.nombre.toLowerCase().includes(busqueda) ||
-                                   (producto.descripcion && producto.descripcion.toLowerCase().includes(busqueda)) ||
-                                   (producto.agricultor && producto.agricultor.toLowerCase().includes(busqueda));
-            
-            // Filtro por categoría
-            const coincideCategoria = categoria === 'todos' || producto.categoria === categoria;
-            
-            // Filtro por precio
-            let coincidePrecio = true;
-            if (rangoPrecio !== 'todos') {
-                const [min, max] = rangoPrecio.split('-').map(val => val === '+' ? Infinity : parseFloat(val));
-                coincidePrecio = producto.precio >= min && (max === Infinity || producto.precio <= max);
+        // ===== DETALLES DE PRODUCTO =====
+        function verDetallesProducto(id) {
+            const producto = productos.find(p => p.id === id);
+            if (producto) {
+                document.getElementById('modalContenido').innerHTML = `
+                    <h3>${producto.nombre}</h3>
+                    <div class="product-details-modal">
+                        <div class="detail-row">
+                            <strong>Categoría:</strong> ${producto.categoria}
+                        </div>
+                        <div class="detail-row">
+                            <strong>Precio:</strong> $${producto.precio}/kg
+                        </div>
+                        <div class="detail-row">
+                            <strong>Disponible:</strong> ${producto.cantidad} kg
+                        </div>
+                        <div class="detail-row">
+                            <strong>Agricultor:</strong> ${producto.agricultor}
+                        </div>
+                        <div class="detail-row">
+                            <strong>Descripción:</strong> 
+                            <p>${producto.descripcion}</p>
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <button class="btn btn-primary" 
+                                onclick="agregarAlCarrito(${producto.id}); cerrarModal()"
+                                ${producto.cantidad === 0 ? 'disabled' : ''}>
+                            🛒 Agregar al Carrito
+                        </button>
+                        <button class="btn btn-secondary" onclick="cerrarModal()">Cerrar</button>
+                    </div>
+                `;
+                document.getElementById('modalProducto').style.display = 'block';
+            }
+        }
+
+        function cerrarModal() {
+            document.getElementById('modalProducto').style.display = 'none';
+        }
+
+        // ===== UTILIDADES =====
+        function mostrarMensaje(mensaje) {
+            // Mensaje simple de alerta por ahora
+            alert(mensaje);
+        }
+
+        // Cerrar modal al hacer clic fuera
+        window.onclick = function(event) {
+            const modal = document.getElementById('modalProducto');
+            if (event.target === modal) {
+                cerrarModal();
+            }
+        }
+    </script>
+
+    <style>
+        .products-header {
+            margin-bottom: 30px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .cart-badge {
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            min-width: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .filters-section {
+            margin-bottom: 30px;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 20px;
+            align-items: end;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+
+        .filter-select select {
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1rem;
+            min-width: 200px;
+        }
+
+        .products-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .product-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-left: 4px solid #2ecc71;
+        }
+
+        .product-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        .product-header h4 {
+            margin: 0;
+            color: #333;
+            font-size: 1.2rem;
+        }
+
+        .product-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .product-badge.disponible {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .product-badge.agotado {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .product-details {
+            margin-bottom: 15px;
+        }
+
+        .detail {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .detail:last-child {
+            border-bottom: none;
+        }
+
+        .precio {
+            color: #2ecc71;
+            font-weight: bold;
+        }
+
+        .cantidad {
+            font-weight: bold;
+        }
+
+        .product-description {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .product-description p {
+            margin: 0;
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+
+        .no-products {
+            text-align: center;
+            padding: 60px 20px;
+            grid-column: 1 / -1;
+            color: #6c757d;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            grid-column: 1 / -1;
+        }
+
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #aaa;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        .product-details-modal {
+            margin: 20px 0;
+        }
+
+        .detail-row {
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .filters-grid {
+                grid-template-columns: 1fr;
             }
             
-            return coincideBusqueda && coincideCategoria && coincidePrecio;
-        });
-        
-        mostrarProductos(productosFiltrados);
-    }
-
-    function verDetallesProducto(id) {
-        const producto = productos.find(p => p.id === id);
-        if (producto) {
-            document.getElementById('modalContenido').innerHTML = `
-                <h3 style="color: #333; margin-bottom: 20px;">${producto.nombre}</h3>
-                <div class="product-details-modal" style="margin: 20px 0;">
-                    <div class="detail-row" style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
-                        <strong>Categoría:</strong> <span style="text-transform: capitalize;">${producto.categoria}</span>
-                    </div>
-                    <div class="detail-row" style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
-                        <strong>Precio:</strong> <span style="color: #28a745; font-weight: bold;">$${producto.precio}/kg</span>
-                    </div>
-                    <div class="detail-row" style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
-                        <strong>Disponible:</strong> <span style="font-weight: bold;">${producto.cantidad} kg</span>
-                    </div>
-                    <div class="detail-row" style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
-                        <strong>Agricultor:</strong> <span style="color: #666;">${producto.agricultor || 'Agricultor AgroTec'}</span>
-                    </div>
-                    ${producto.descripcion ? `
-                    <div class="detail-row" style="margin-bottom: 15px;">
-                        <strong>Descripción:</strong> 
-                        <p style="margin: 10px 0 0 0; color: #666; line-height: 1.5;">${producto.descripcion}</p>
-                    </div>
-                    ` : ''}
-                </div>
-                <div class="modal-actions" style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
-                    <button class="btn btn-primary" 
-                            onclick="agregarAlCarritoDesdeMarketplace(${producto.id}); cerrarModal()"
-                            ${producto.cantidad === 0 ? 'disabled' : ''}
-                            style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; ${producto.cantidad === 0 ? 'opacity: 0.6; cursor: not-allowed;' : ''}">
-                        🛒 Agregar al Carrito
-                    </button>
-                    <button class="btn btn-secondary" onclick="cerrarModal()" style="background: transparent; color: #667eea; border: 2px solid #667eea; padding: 10px 20px; border-radius: 20px; cursor: pointer;">
-                        Cerrar
-                    </button>
-                </div>
-            `;
-            document.getElementById('modalProducto').style.display = 'block';
+            .products-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .product-actions {
+                flex-direction: column;
+            }
         }
-    }
-
-    function cerrarModal() {
-        document.getElementById('modalProducto').style.display = 'none';
-    }
-
-    // Cerrar modal al hacer clic fuera
-    window.onclick = function(event) {
-        const modal = document.getElementById('modalProducto');
-        if (event.target === modal) {
-            cerrarModal();
-        }
-    }
-
-    // Inicializar contador de carrito
-    document.addEventListener('DOMContentLoaded', function() {
-        actualizarContadorCarrito();
-    });
-</script>
+    </style>
+</body>
+</html>
