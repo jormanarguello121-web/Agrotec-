@@ -21,37 +21,28 @@ document.addEventListener('DOMContentLoaded', function () {
 // ================================
 let productos = [];
 
-function cargarProductosDisponibles() {
-    // Simulación (luego vendrá desde el backend)
-    productos = [
-        {
-            id: 1,
-            nombre: "Tomates Orgánicos",
-            precio: 2500,
-            cantidad: 30,
-            categoria: "Verduras",
-            descripcion: "Tomates frescos cultivados sin pesticidas",
-            imagen: "https://cdn-icons-png.flaticon.com/512/766/766468.png"
-        },
-        {
-            id: 2,
-            nombre: "Aguacates Hass",
-            precio: 4000,
-            cantidad: 15,
-            categoria: "Frutas",
-            descripcion: "Aguacates de alta calidad",
-            imagen: "https://cdn-icons-png.flaticon.com/512/415/415733.png"
-        }
-    ];
+async function cargarProductosDisponibles() {
+    try {
+        const respuesta = await fetch('https://agrotec-h2nn.onrender.com/api/productos');
+        if (!respuesta.ok) throw new Error('Error al obtener los productos');
+        
+        const data = await respuesta.json();
+        productos = data.productos.filter(p => p.estado === "activo" && p.cantidad > 0);
 
-    mostrarProductos();
+        mostrarProductos();
+    } catch (error) {
+        console.error('Error cargando productos:', error);
+        const contenedor = document.getElementById('listaProductos');
+        contenedor.innerHTML = `<p class="no-data">⚠️ No se pudieron cargar los productos. Intenta más tarde.</p>`;
+    }
 }
 
 function mostrarProductos() {
     const contenedor = document.getElementById('listaProductos');
     contenedor.innerHTML = productos.map(p => `
         <div class="product-card">
-            <img src="${p.imagen}" alt="${p.nombre}" class="product-img">
+            <img src="${p.imagen || 'https://cdn-icons-png.flaticon.com/512/415/415733.png'}" 
+                 alt="${p.nombre}" class="product-img">
             <div class="product-info">
                 <h4>${p.nombre}</h4>
                 <p class="categoria">📦 ${p.categoria}</p>
@@ -62,7 +53,6 @@ function mostrarProductos() {
         </div>
     `).join('');
 }
-
 // ================================
 // CARRITO DE COMPRAS
 // ================================
