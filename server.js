@@ -512,6 +512,7 @@ app.get('/pedidos/rastrear/:trackingId', (req, res) => {
         ubicacion: "Centro de distribución",
         estimado: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
     });
+  });   
 // ================= MANEJO DE ERRORES =================
 
 // Ruta 404
