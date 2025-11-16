@@ -439,6 +439,79 @@ app.get('/:carpeta/:archivo.css', (req, res) => {
         res.status(404).json({ success: false, message: 'Archivo no encontrado' });
     }
 });
+// ================= API CARRITO Y PEDIDOS =================
+
+// API: Procesar pedido desde carrito
+app.post('/pedidos/procesar', (req, res) => {
+    const { items, direccionEntrega, metodoPago, total } = req.body;
+    
+    console.log('📦 Procesando pedido:', { items, total });
+    
+    if (!items || !Array.isArray(items) || items.length === 0) {
+        return res.status(400).json({ 
+            success: false, 
+            message: 'El carrito está vacío' 
+        });
+    }
+
+    // Crear nuevo pedido
+    const nuevoPedido = {
+        id: Date.now(),
+        fecha: new Date().toISOString(),
+        items: items,
+        subtotal: total - 2.00,
+        envio: 2.00,
+        total: total,
+        estado: "confirmado",
+        direccionEntrega: direccionEntrega || "Calle Principal #123, Ciudad",
+        metodoPago: metodoPago || "Tarjeta Crédito",
+        tracking: `TRK${Date.now()}`
+    };
+
+    res.json({ 
+        success: true, 
+        message: 'Pedido procesado exitosamente',
+        pedido: nuevoPedido
+    });
+});
+
+// API: Obtener pedidos del usuario
+app.get('/pedidos/usuario/:userId', (req, res) => {
+    const userId = req.params.userId;
+    
+    // Por ahora devolvemos un array vacío o datos de ejemplo
+    // Más adelante puedes conectar con una base de datos
+    res.json({
+        success: true,
+        pedidos: [
+            {
+                id: 1001,
+                fecha: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+                items: [
+                    { id: 1, nombre: "Tomates Orgánicos", precio: 2.5, cantidad: 3 },
+                    { id: 3, nombre: "Zanahorias Frescas", precio: 1.8, cantidad: 2 }
+                ],
+                subtotal: 10.10,
+                envio: 2.00,
+                total: 12.10,
+                estado: "entregado",
+                tracking: "TRK123456789"
+            }
+        ]
+    });
+});
+
+// API: Rastrear pedido
+app.get('/pedidos/rastrear/:trackingId', (req, res) => {
+    const trackingId = req.params.trackingId;
+    
+    res.json({
+        success: true,
+        tracking: trackingId,
+        estado: "en_camino",
+        ubicacion: "Centro de distribución",
+        estimado: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+    });
 // ================= MANEJO DE ERRORES =================
 
 // Ruta 404
