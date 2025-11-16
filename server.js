@@ -461,8 +461,8 @@ app.use((err, req, res, next) => {
 // ==========================
 // ENDPOINT: Listar productos desde productos.json
 // ==========================
-const fs = require('fs');
-const path = require('path');
+fs = require('fs');
+path = require('path');
 
 app.get('/productos', (req, res) => {
   const filePath = path.join(__dirname, 'productos.json');
