@@ -232,104 +232,148 @@
             }
         }
 
-        async function procesarPedido() {
-            if (carrito.length === 0) {
-                mostrarMensaje('El carrito está vacío', 'error');
-                return;
-            }
+      async function procesarPedido() {
+    if (carrito.length === 0) {
+        mostrarMensaje('El carrito está vacío', 'error');
+        return;
+    }
 
-            try {
-                // Simular procesamiento del pedido
-                const pedido = {
-                    id: Date.now(),
-                    fecha: new Date().toISOString(),
-                    items: carrito,
-                    subtotal: carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0),
-                    envio: 2.00,
-                    total: carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0) + 2.00,
-                    estado: 'confirmado'
-                };
+    try {
+        const usuario = JSON.parse(localStorage.getItem('usuario'));
+        
+        const pedidoData = {
+            items: carrito,
+            direccionEntrega: usuario.direccion || 'Dirección no especificada',
+            metodoPago: 'Tarjeta de Crédito', // Por defecto
+            total: carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0) + 2.00
+        };
 
-                // Guardar pedido en localStorage (luego se integrará con API)
-                const pedidosAnteriores = JSON.parse(localStorage.getItem('pedidos')) || [];
-                pedidosAnteriores.push(pedido);
-                localStorage.setItem('pedidos', JSON.stringify(pedidosAnteriores));
+        console.log('Enviando pedido:', pedidoData);
 
-                // Mostrar confirmación
-                mostrarConfirmacionPedido(pedido);
+        const response = await fetch('/pedidos/procesar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(pedidoData)
+        });
 
-            } catch (error) {
-                console.error('Error procesando pedido:', error);
-                mostrarMensaje('Error al procesar el pedido', 'error');
-            }
+        if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status}`);
         }
 
-        function mostrarConfirmacionPedido(pedido) {
-            document.getElementById('detallesPedido').innerHTML = `
-                <div class="order-details">
-                    <p><strong>Número de pedido:</strong> #${pedido.id}</p>
-                    <p><strong>Total:</strong> $${pedido.total.toFixed(2)}</p>
-                    <p><strong>Estado:</strong> <span class="estado-confirmado">✅ Confirmado</span></p>
-                    <p><strong>Fecha estimada de entrega:</strong> ${document.getElementById('fechaEntrega').textContent}</p>
-                    
-                    <div class="order-items">
-                        <h4>Productos:</h4>
-                        ${pedido.items.map(item => `
-                            <div class="order-item">
-                                ${item.cantidad} kg de ${item.nombre} - $${(item.precio * item.cantidad).toFixed(2)}
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
+        const result = await response.json();
+        
+        if (result.success) {
+            // Guardar pedido en localStorage como respaldo
+            const pedidosAnteriores = JSON.parse(localStorage.getItem('pedidos')) || [];
+            pedidosAnteriores.push(result.pedido);
+            localStorage.setItem('pedidos', JSON.stringify(pedidosAnteriores));
+
+            // Mostrar confirmación
+            mostrarConfirmacionPedido(result.pedido);
             
-            // Limpiar carrito después de la compra
+            // Limpiar carrito
             carrito = [];
             localStorage.setItem('carrito', JSON.stringify(carrito));
             
-            document.getElementById('modalConfirmacion').style.display = 'block';
-        }
-
-        function irAMisPedidos() {
-            window.location.href = 'pedidos.html';
-        }
-
-        function seguirComprando() {
-            window.location.href = 'mercado.html';
-        }
-
-        function cerrarModalConfirmacion() {
-            document.getElementById('modalConfirmacion').style.display = 'none';
-        }
-
-        function mostrarMensaje(mensaje, tipo = 'success') {
-            // Sistema de mensajes mejorado (similar al agricultor)
-            const mensajeDiv = document.createElement('div');
-            mensajeDiv.className = `mensaje-flotante ${tipo}`;
-            mensajeDiv.textContent = mensaje;
-            mensajeDiv.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                padding: 15px 20px;
-                border-radius: 10px;
-                color: white;
-                font-weight: bold;
-                z-index: 1000;
-                animation: slideIn 0.3s ease;
-            `;
+            mostrarMensaje('¡Pedido realizado con éxito!', 'success');
             
-            if (tipo === 'success') mensajeDiv.style.background = '#28a745';
-            if (tipo === 'error') mensajeDiv.style.background = '#dc3545';
-            if (tipo === 'info') mensajeDiv.style.background = '#17a2b8';
-            
-            document.body.appendChild(mensajeDiv);
-            
-            setTimeout(() => {
-                mensajeDiv.remove();
-            }, 3000);
+        } else {
+            throw new Error(result.message || 'Error al procesar el pedido');
         }
 
+    } catch (error) {
+        console.error('Error procesando pedido:', error);
+        
+        // Fallback: procesar localmente si la API falla
+        mostrarMensaje('Usando modo offline. Pedido guardado localmente.', 'info');
+        
+        const pedido = {
+            id: Date.now(),
+            fecha: new Date().toISOString(),
+            items: [...carrito],
+            subtotal: carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0),
+            envio: 2.00,
+            total: carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0) + 2.00,
+            estado: 'confirmado',
+            tracking: `TRK${Date.now()}`
+        };
+
+        const pedidosAnteriores = JSON.parse(localStorage.getItem('pedidos')) || [];
+        pedidosAnteriores.push(pedido);
+        localStorage.setItem('pedidos', JSON.stringify(pedidosAnteriores));
+
+        mostrarConfirmacionPedido(pedido);
+        
+        // Limpiar carrito
+        carrito = [];
+        localStorage.setItem('carrito', JSON.stringify(carrito));
+    }
+}
+
+function mostrarConfirmacionPedido(pedido) {
+    document.getElementById('detallesPedido').innerHTML = `
+        <div class="order-details">
+            <p><strong>Número de pedido:</strong> #${pedido.id}</p>
+            <p><strong>Total:</strong> $${pedido.total.toFixed(2)}</p>
+            <p><strong>Estado:</strong> <span class="estado-confirmado">✅ Confirmado</span></p>
+            <p><strong>Fecha estimada de entrega:</strong> ${document.getElementById('fechaEntrega').textContent}</p>
+            ${pedido.tracking ? `<p><strong>Número de tracking:</strong> ${pedido.tracking}</p>` : ''}
+            
+            <div class="order-items">
+                <h4>Productos:</h4>
+                ${pedido.items.map(item => `
+                    <div class="order-item">
+                        ${item.cantidad} kg de ${item.nombre} - $${(item.precio * item.cantidad).toFixed(2)}
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('modalConfirmacion').style.display = 'block';
+}
+
+function irAMisPedidos() {
+    window.location.href = 'pedidos.html';
+}
+
+function seguirComprando() {
+    window.location.href = 'mercado.html';
+}
+
+function cerrarModalConfirmacion() {
+    document.getElementById('modalConfirmacion').style.display = 'none';
+}
+
+function mostrarMensaje(mensaje, tipo = 'success') {
+    // Sistema de mensajes mejorado (similar al agricultor)
+    const mensajeDiv = document.createElement('div');
+    mensajeDiv.className = `mensaje-flotante ${tipo}`;
+    mensajeDiv.textContent = mensaje;
+    mensajeDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        border-radius: 10px;
+        color: white;
+        font-weight: bold;
+        z-index: 1000;
+        animation: slideIn 0.3s ease;
+    `;
+    
+    if (tipo === 'success') mensajeDiv.style.background = '#28a745';
+    if (tipo === 'error') mensajeDiv.style.background = '#dc3545';
+    if (tipo === 'info') mensajeDiv.style.background = '#17a2b8';
+    
+    document.body.appendChild(mensajeDiv);
+    
+    setTimeout(() => {
+        mensajeDiv.remove();
+    }, 3000);
+}
         // Cerrar modal al hacer clic fuera
         window.onclick = function(event) {
             const modal = document.getElementById('modalConfirmacion');
