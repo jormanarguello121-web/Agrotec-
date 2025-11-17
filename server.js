@@ -99,7 +99,10 @@ app.get('/agricultor/informacion.html', (req, res) => {
 app.get('/cliente/mercado.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'cliente', 'mercado.html'));
 });
-
+// Carrito cliente 
+app.get('/cliente/carrito.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'cliente', 'carrito.html'));
+});
 // Productos cliente
 app.get('/cliente/productos.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'cliente', 'productos.html'));
@@ -108,6 +111,10 @@ app.get('/cliente/productos.html', (req, res) => {
 // Calendario cliente
 app.get('/cliente/calendario.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'cliente', 'calendario.html'));
+});
+// Pedidos cliente - ¡ESTA TAMBIÉN FALTA!
+app.get('/cliente/pedidos.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'cliente', 'pedidos.html'));
 });
 
 // ================= RUTAS ADMIN =================
