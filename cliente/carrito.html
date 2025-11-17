@@ -112,23 +112,29 @@
     <script>
         let carrito = JSON.parse(localStorage.getItem('carrito')) || [];
 
-        document.addEventListener('DOMContentLoaded', function() {
-            // Verificar autenticación
-            const usuario = JSON.parse(localStorage.getItem('usuario'));
-            if (!usuario || usuario.rol !== 'cliente') {
-                window.location.href = '/login.html';
-                return;
-            }
-            
-            mostrarCarrito();
-            actualizarResumen();
-            calcularFechaEntrega();
-        });
+       document.addEventListener('DOMContentLoaded', function() {
+    // Verificar autenticación
+    const usuario = JSON.parse(localStorage.getItem('usuario'));
+    if (!usuario || usuario.rol !== 'cliente') {
+        window.location.href = '/login.html';
+        return;
+    }
+    
+    // Inicializar carrito desde localStorage
+    carrito = JSON.parse(localStorage.getItem('carrito')) || [];
+    
+    // Mostrar el contenido del carrito
+    mostrarCarrito();
+    actualizarResumen();
+    calcularFechaEntrega();
+    
+    console.log('Carrito cargado:', carrito); // Para debugging
+});
 
         function mostrarCarrito() {
             const container = document.getElementById('carritoContainer');
             const resumen = document.getElementById('resumenPedido');
-
+    
             if (carrito.length === 0) {
                 container.innerHTML = `
                     <div class="empty-cart">
