@@ -120,12 +120,12 @@
                         id: 1001,
                         fecha: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // Hace 2 días
                         items: [
-                            { id: 1, nombre: "Tomates Orgánicos", precio: 2.5, cantidad: 3, agricultor: "Juan Agricultor" },
-                            { id: 3, nombre: "Zanahorias Frescas", precio: 1.8, cantidad: 2, agricultor: "María Productora" }
+                            { id: 1, nombre: "Tomates Orgánicos", precio: 2500, cantidad: 3, agricultor: "Juan Agricultor" },
+                            { id: 3, nombre: "Zanahorias Frescas", precio: 1800, cantidad: 2, agricultor: "María Productora" }
                         ],
-                        subtotal: 10.10,
-                        envio: 2.00,
-                        total: 12.10,
+                        subtotal: 10100,
+                        envio: 2000,
+                        total: 12100,
                         estado: "entregado",
                         direccionEntrega: "Calle Principal #123, Ciudad",
                         metodoPago: "Tarjeta Crédito",
@@ -135,11 +135,11 @@
                         id: 1002,
                         fecha: new Date().toISOString(),
                         items: [
-                            { id: 1, nombre: "Tomates Orgánicos", precio: 2.5, cantidad: 5, agricultor: "Juan Agricultor" }
+                            { id: 1, nombre: "Tomates Orgánicos", precio: 2500, cantidad: 5, agricultor: "Juan Agricultor" }
                         ],
-                        subtotal: 12.50,
-                        envio: 2.00,
-                        total: 14.50,
+                        subtotal: 12500,
+                        envio: 2000,
+                        total: 14500,
                         estado: "camino",
                         direccionEntrega: "Calle Principal #123, Ciudad",
                         metodoPago: "Tarjeta Débito",
@@ -199,7 +199,7 @@
                         </div>
                         
                         <div class="order-total">
-                            <strong>Total: $${pedido.total.toFixed(2)}</strong>
+                            <strong>Total: $${pedido.total.toLocaleString('es-CO')} COP</strong>
                         </div>
                     </div>
                     
@@ -272,7 +272,7 @@
                                             ${item.cantidad} kg
                                         </div>
                                         <div class="item-price">
-                                            $${(item.precio * item.cantidad).toFixed(2)}
+                                            $${(item.precio * item.cantidad).toLocaleString('es-CO')} COP
                                         </div>
                                     </div>
                                 `).join('')}
@@ -282,15 +282,15 @@
                         <div class="totals-section">
                             <div class="total-row">
                                 <span>Subtotal:</span>
-                                <span>$${pedido.subtotal.toFixed(2)}</span>
+                                <span>$${pedido.subtotal.toLocaleString('es-CO')} COP</span>
                             </div>
                             <div class="total-row">
                                 <span>Envío:</span>
-                                <span>$${pedido.envio.toFixed(2)}</span>
+                                <span>$${pedido.envio.toLocaleString('es-CO')} COP</span>
                             </div>
                             <div class="total-row final">
                                 <span><strong>Total:</strong></span>
-                                <span><strong>$${pedido.total.toFixed(2)}</strong></span>
+                                <span><strong>$${pedido.total.toLocaleString('es-CO')} COP</strong></span>
                             </div>
                         </div>
                         
