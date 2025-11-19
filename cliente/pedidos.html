@@ -474,6 +474,12 @@
                 cerrarModalPedido();
             }
         }
+
+        // Limpiar localStorage para forzar la actualización de precios
+        function limpiarDatosPrueba() {
+            localStorage.removeItem('pedidos');
+            location.reload();
+        }
     </script>
 
     <style>
@@ -801,6 +807,21 @@
             border-top: 1px solid #dee2e6;
         }
 
+        /* Botón para limpiar datos de prueba */
+        .debug-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            z-index: 1000;
+        }
+
         @media (max-width: 768px) {
             .header-content {
                 flex-direction: column;
@@ -837,5 +858,10 @@
             }
         }
     </style>
+
+    <!-- Botón para limpiar datos de prueba (solo desarrollo) -->
+    <button class="debug-button" onclick="limpiarDatosPrueba()" title="Limpiar datos de prueba">
+        🔄 Limpiar Datos
+    </button>
 </body>
 </html>
