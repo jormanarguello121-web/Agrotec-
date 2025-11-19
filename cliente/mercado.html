@@ -235,13 +235,13 @@
     </style>
 
     <script>
-        // ===== DATOS DE PRODUCTOS =====
+        // ===== DATOS DE PRODUCTOS EN PESOS COLOMBIANOS =====
         const productos = [
             {
                 id: 1,
                 nombre: "🍅 Tomates Orgánicos",
                 categoria: "verduras",
-                precio: 4.500,
+                precio: 4500, // $4.500 COP
                 cantidad: 50,
                 descripcion: "Tomates frescos cultivados orgánicamente sin pesticidas químicos. Ideal para ensaladas y salsas.",
                 agricultor: "Juan Agricultor",
@@ -251,7 +251,7 @@
                 id: 2,
                 nombre: "🥑 Aguacates Hass", 
                 categoria: "frutas",
-                precio: 6.500,
+                precio: 6500, // $6.500 COP
                 cantidad: 0,
                 descripcion: "Aguacates de primera calidad, perfectos para guacamole o tostadas.",
                 agricultor: "Pedro Productor",
@@ -261,7 +261,7 @@
                 id: 3,
                 nombre: "🥕 Zanahorias Frescas",
                 categoria: "verduras",
-                precio: 3.500,
+                precio: 3500, // $3.500 COP
                 cantidad: 30,
                 descripcion: "Zanahorias dulces y crujientes, recién cosechadas de nuestra huerta.",
                 agricultor: "María Agricultora", 
@@ -271,7 +271,7 @@
                 id: 4,
                 nombre: "🍌 Bananos Maduros",
                 categoria: "frutas",
-                precio: 5.500,
+                precio: 5500, // $5.500 COP
                 cantidad: 25,
                 descripcion: "Bananos naturales en su punto perfecto de maduración, dulces y nutritivos.",
                 agricultor: "Carlos Campesino",
@@ -281,7 +281,7 @@
                 id: 5,
                 nombre: "🥦 Brócoli Orgánico",
                 categoria: "verduras", 
-                precio: 4.600,
+                precio: 4600, // $4.600 COP
                 cantidad: 15,
                 descripcion: "Brócoli fresco cultivado de manera sostenible, rico en vitaminas y minerales.",
                 agricultor: "Ana Agroecológica",
@@ -291,7 +291,7 @@
                 id: 6,
                 nombre: "🍓 Fresas de la Montaña",
                 categoria: "frutas",
-                precio: 10.000,
+                precio: 10000, // $10.000 COP
                 cantidad: 8,
                 descripcion: "Fresas rojas y jugosas cultivadas en altura, con un sabor intenso y dulce.",
                 agricultor: "Roberto Fruticultor",
@@ -339,7 +339,7 @@
                         ${producto.cantidad > 0 ? '🟢 DISPONIBLE' : '🔴 AGOTADO'}
                     </span>
                     <h3>${producto.nombre}</h3>
-                    <div class="product-price">$${producto.precio} / kg</div>
+                    <div class="product-price">$${producto.precio.toLocaleString('es-CO')} COP / kg</div>
                     <div class="product-info"><strong>👨‍🌾 Agricultor:</strong> ${producto.agricultor}</div>
                     <div class="product-info"><strong>📦 Disponible:</strong> ${producto.cantidad} kg</div>
                     <div class="product-info"><strong>📋 Categoría:</strong> ${producto.categoria}</div>
@@ -383,7 +383,7 @@
             
             // Mostrar mensaje de confirmación
             alert('✅ ' + producto.nombre + ' agregado al carrito\n\n' +
-                  '💰 Precio: $' + producto.precio + '/kg\n' +
+                  '💰 Precio: $' + producto.precio.toLocaleString('es-CO') + ' COP/kg\n' +
                   '📦 Ahora en carrito: ' + (itemExistente ? itemExistente.cantidad : 1) + ' kg');
         }
 
@@ -406,7 +406,7 @@
             const detalles = `
 🍅 ${producto.nombre}
 
-💰 PRECIO: $${producto.precio} por kilogramo
+💰 PRECIO: $${producto.precio.toLocaleString('es-CO')} COP por kilogramo
 📦 DISPONIBLE: ${producto.cantidad} kg
 👨‍🌾 AGRICULTOR: ${producto.agricultor}
 📋 CATEGORÍA: ${producto.categoria}
@@ -458,7 +458,7 @@ ${producto.cantidad > 0 ? '🟢 PRODUCTO DISPONIBLE' : '🔴 PRODUCTO AGOTADO'}
                         ${producto.cantidad > 0 ? '🟢 DISPONIBLE' : '🔴 AGOTADO'}
                     </span>
                     <h3>${producto.nombre}</h3>
-                    <div class="product-price">$${producto.precio} / kg</div>
+                    <div class="product-price">$${producto.precio.toLocaleString('es-CO')} COP / kg</div>
                     <div class="product-info"><strong>👨‍🌾 Agricultor:</strong> ${producto.agricultor}</div>
                     <div class="product-info"><strong>📦 Disponible:</strong> ${producto.cantidad} kg</div>
                     <div class="product-description">${producto.descripcion}</div>
