@@ -741,7 +741,10 @@ app.use((err, req, res, next) => {
 
 // Inicializar archivos de datos
 inicializarArchivosDatos();
-
+// Dashboard admin
+app.get('/admin/dashboard.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin', 'dashboard.html'));
+});
 // Iniciar servidor
 app.listen(PORT, () => {
     console.log(`\n🚀 Servidor AgroTec ejecutándose en http://localhost:${PORT}`);
