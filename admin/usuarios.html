@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgroTec - Gestión de Usuarios</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌱 AgroTec</h1>
+            <p>Gestión de Usuarios - Administrador</p>
+        </header>
+
+        <nav class="navbar">
+            <a href="dashboard.html" class="nav-link">📊 Dashboard</a>
+            <a href="usuarios.html" class="nav-link active">👥 Usuarios</a>
+            <a href="reportes.html" class="nav-link">📈 Reportes</a>
+            <a href="/" class="nav-link">🚪 Salir</a>
+        </nav>
+
+        <main>
+            <section class="admin-header">
+                <div class="header-content">
+                    <h2>Gestión de Usuarios</h2>
+                    <button class="btn btn-primary" onclick="mostrarModalNuevoUsuario()">
+                        ➕ Nuevo Usuario
+                    </button>
+                </div>
+            </section>
+
+            <!-- Estadísticas -->
+            <section class="users-stats">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-content">
+                            <h3 id="totalUsuarios">0</h3>
+                            <p>Total Usuarios</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🌱</div>
+                        <div class="stat-content">
+                            <h3 id="totalAgricultores">0</h3>
+                            <p>Agricultores</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🛒</div>
+                        <div class="stat-content">
+                            <h3 id="totalClientes">0</h3>
+                            <p>Clientes</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⚙️</div>
+                        <div class="stat-content">
+                            <h3 id="totalAdmins">0</h3>
+                            <p>Administradores</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Filtros -->
+            <section class="filters-section">
+                <div class="filters-grid">
+                    <div class="search-box">
+                        <input type="text" id="buscarUsuario" placeholder="🔍 Buscar usuarios..." 
+                               onkeyup="filtrarUsuarios()">
+                    </div>
+                    <div class="filter-select">
+                        <select id="filtroRol" onchange="filtrarUsuarios()">
+                            <option value="todos">Todos los roles</option>
+                            <option value="agricultor">🌱 Agricultores</option>
+                            <option value="cliente">🛒 Clientes</option>
+                            <option value="administrador">⚙️ Administradores</option>
+                        </select>
+                    </div>
+                    <div class="filter-select">
+                        <select id="filtroEstado" onchange="filtrarUsuarios()">
+                            <option value="todos">Todos los estados</option>
+                            <option value="activo">🟢 Activos</option>
+                            <option value="inactivo">🔴 Inactivos</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Lista de Usuarios -->
+            <section class="users-list">
+                <div id="listaUsuarios" class="users-container">
+                    <div class="loading">Cargando usuarios...</div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal para nuevo/editar usuario -->
+    <div id="modalUsuario" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="cerrarModalUsuario()">&times;</span>
+            <h3 id="modalTitulo">Nuevo Usuario</h3>
+            <form id="formUsuario">
+                <input type="hidden" id="usuarioId">
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="nombreUsuario">Nombre completo *</label>
+                        <input type="text" id="nombreUsuario" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="emailUsuario">Email *</label>
+                        <input type="email" id="emailUsuario" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="passwordUsuario">Contraseña *</label>
+                        <input type="password" id="passwordUsuario" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="rolUsuario">Rol *</label>
+                        <select id="rolUsuario" required>
+                            <option value="">Seleccionar rol</option>
+                            <option value="agricultor">🌱 Agricultor</option>
+                            <option value="cliente">🛒 Cliente</option>
+                            <option value="administrador">⚙️ Administrador</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="estadoUsuario">Estado</label>
+                        <select id="estadoUsuario">
+                            <option value="activo">🟢 Activo</option>
+                            <option value="inactivo">🔴 Inactivo</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModalUsuario()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Usuario</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/admin.js"></script>
+    <script>
+        // La lógica JavaScript se carga desde admin.js
+        document.addEventListener('DOMContentLoaded', function() {
+            // AdminManager se inicializa automáticamente
+        });
+    </script>
+</body>
+</html>

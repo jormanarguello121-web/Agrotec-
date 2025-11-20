@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgroTec - Reportes del Sistema</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌱 AgroTec</h1>
+            <p>Reportes del Sistema - Administrador</p>
+        </header>
+
+        <nav class="navbar">
+            <a href="dashboard.html" class="nav-link">📊 Dashboard</a>
+            <a href="usuarios.html" class="nav-link">👥 Usuarios</a>
+            <a href="reportes.html" class="nav-link active">📈 Reportes</a>
+            <a href="/" class="nav-link">🚪 Salir</a>
+        </nav>
+
+        <main>
+            <section class="admin-header">
+                <div class="header-content">
+                    <h2>Reportes del Sistema</h2>
+                    <div class="report-actions">
+                        <button class="btn btn-primary" onclick="generarReporteCompleto()">
+                            📊 Generar Reporte Completo
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportarDatos()">
+                            📥 Exportar Datos
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Filtros de Reportes -->
+            <section class="filters-section">
+                <div class="filters-grid">
+                    <div class="filter-select">
+                        <label for="filtroPeriodo">Período:</label>
+                        <select id="filtroPeriodo" onchange="actualizarReportes()">
+                            <option value="hoy">Hoy</option>
+                            <option value="semana">Esta semana</option>
+                            <option value="mes" selected>Este mes</option>
+                            <option value="trimestre">Este trimestre</option>
+                            <option value="anio">Este año</option>
+                            <option value="personalizado">Personalizado</option>
+                        </select>
+                    </div>
+                    <div class="filter-select" id="fechasPersonalizadas" style="display: none;">
+                        <label for="fechaInicio">Desde:</label>
+                        <input type="date" id="fechaInicio">
+                        <label for="fechaFin">Hasta:</label>
+                        <input type="date" id="fechaFin">
+                    </div>
+                    <div class="filter-select">
+                        <label for="filtroTipo">Tipo de Reporte:</label>
+                        <select id="filtroTipo" onchange="actualizarReportes()">
+                            <option value="general">General</option>
+                            <option value="ventas">Ventas</option>
+                            <option value="usuarios">Usuarios</option>
+                            <option value="productos">Productos</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Métricas Principales -->
+            <section class="metrics-section">
+                <div class="metrics-grid">
+                    <div class="metric-card primary">
+                        <div class="metric-icon">💰</div>
+                        <div class="metric-content">
+                            <h3 id="totalVentas">$0</h3>
+                            <p>Ventas Totales</p>
+                            <span class="metric-trend positive">+12%</span>
+                        </div>
+                    </div>
+                    <div class="metric-card success">
+                        <div class="metric-icon">👥</div>
+                        <div class="metric-content">
+                            <h3 id="totalUsuarios">0</h3>
+                            <p>Usuarios Registrados</p>
+                            <span class="metric-trend positive">+5%</span>
+                        </div>
+                    </div>
+                    <div class="metric-card warning">
+                        <div class="metric-icon">📦</div>
+                        <div class="metric-content">
+                            <h3 id="totalProductos">0</h3>
+                            <p>Productos Activos</p>
+                            <span class="metric-trend positive">+8%</span>
+                        </div>
+                    </div>
+                    <div class="metric-card info">
+                        <div class="metric-icon">🛒</div>
+                        <div class="metric-content">
+                            <h3 id="totalPedidos">0</h3>
+                            <p>Pedidos Procesados</p>
+                            <span class="metric-trend positive">+15%</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Gráficos y Estadísticas -->
+            <section class="charts-section">
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h4>📈 Ventas por Mes</h4>
+                        <div class="chart-placeholder">
+                            <p>Gráfico de ventas mensuales</p>
+                            <div class="chart-bars">
+                                <div class="bar" style="height: 60%">Ene</div>
+                                <div class="bar" style="height: 80%">Feb</div>
+                                <div class="bar" style="height: 45%">Mar</div>
+                                <div class="bar" style="height: 90%">Abr</div>
+                                <div class="bar" style="height: 75%">May</div>
+                                <div class="bar" style="height: 95%">Jun</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-card">
+                        <h4>👥 Distribución de Usuarios</h4>
+                        <div class="chart-placeholder">
+                            <p>Gráfico de roles de usuarios</p>
+                            <div class="chart-pie">
+                                <div class="pie-segment agricultor">🌱 40%</div>
+                                <div class="pie-segment cliente">🛒 55%</div>
+                                <div class="pie-segment admin">⚙️ 5%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tablas de Datos -->
+            <section class="tables-section">
+                <div class="tables-grid">
+                    <div class="table-card">
+                        <h4>🚀 Productos Más Vendidos</h4>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th>Ventas</th>
+                                        <th>Ingresos</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablaTopProductos">
+                                    <tr>
+                                        <td>🍅 Tomates Orgánicos</td>
+                                        <td>150 kg</td>
+                                        <td>$675,000</td>
+                                    </tr>
+                                    <tr>
+                                        <td>🥑 Aguacates Hass</td>
+                                        <td>120 kg</td>
+                                        <td>$780,000</td>
+                                    </tr>
+                                    <tr>
+                                        <td>🥕 Zanahorias Frescas</td>
+                                        <td>95 kg</td>
+                                        <td>$361,000</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="table-card">
+                        <h4>📊 Actividad Reciente</h4>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Actividad</th>
+                                        <th>Usuario</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablaActividad">
+                                    <tr>
+                                        <td>Hoy 10:30</td>
+                                        <td>Nuevo pedido #1005</td>
+                                        <td>María Cliente</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Hoy 09:15</td>
+                                        <td>Producto agregado</td>
+                                        <td>Juan Agricultor</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Ayer 16:45</td>
+                                        <td>Usuario registrado</td>
+                                        <td>Nuevo Cliente</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/admin.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const usuario = JSON.parse(localStorage.getItem('usuario'));
+            if (!usuario || usuario.rol !== 'administrador') {
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            // Cargar reportes
+            if (typeof cargarReportes === 'function') {
+                cargarReportes();
+            }
+            
+            // Configurar filtros
+            const filtroPeriodo = document.getElementById('filtroPeriodo');
+            if (filtroPeriodo) {
+                filtroPeriodo.addEventListener('change', function() {
+                    const personalizado = this.value === 'personalizado';
+                    const fechasDiv = document.getElementById('fechasPersonalizadas');
+                    if (fechasDiv) {
+                        fechasDiv.style.display = personalizado ? 'block' : 'none';
+                    }
+                    if (typeof actualizarReportes === 'function') {
+                        actualizarReportes();
+                    }
+                });
+            }
+        });
+
+        function actualizarReportes() {
+            console.log('Actualizando reportes con filtros...');
+        }
+
+        function generarReporteCompleto() {
+            if (typeof adminManager !== 'undefined') {
+                adminManager.generarReporteCompleto();
+            } else {
+                alert('📊 Generando reporte completo...');
+            }
+        }
+
+        function exportarDatos() {
+            if (typeof adminManager !== 'undefined') {
+                adminManager.exportarDatos();
+            } else {
+                alert('📥 Exportando datos...');
+            }
+        }
+    </script>
+</body>
+</html>
