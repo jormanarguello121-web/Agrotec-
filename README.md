@@ -10,36 +10,10 @@ Digitalizar procesos de compra-venta de productos agrícolas
 Facilitar el acceso a mercados para productores rurales
 Validar flujos de usuario con agricultores reales
 
-Estructura del Proyecto
-AgroTec/
-├── admin/                 # Módulo de administración
-│   ├── dashboard.html     # Panel de control admin
-│   ├── reportes.html      # Reportes del sistema
-│   ├── usuarios.html      # Gestión de usuarios
-│   └── admin.css          # Estilos del admin
-├── agricultor/            # Módulo para agricultores
-│   ├── dashboard.html     # Dashboard personal
-│   ├── productos.html     # Gestión de productos
-│   ├── informacion.html   # Información del perfil
-│   └── agricultor.css     # Estilos del agricultor
-├── cliente/               # Módulo para clientes
-│   ├── mercado.html       # Catálogo de productos
-│   ├── carrito.html       # Carrito de compras
-│   ├── pedidos.html       # Historial de pedidos
-│   ├── calendario.html    # Calendario agrícola
-│   └── cliente.css        # Estilos del cliente
-├── js/                    # Lógica de la aplicación
-│   ├── auth.js            # Autenticación
-│   ├── admin.js           # Funciones admin
-│   ├── agricultor.js      # Lógica agricultor
-│   ├── cliente.js         # Lógica cliente
-│   └── api.js             # Simulación de API
-├── public/                # Archivos públicos
-│   ├── index.html         # Página principal
-│   ├── login.html         # Inicio de sesión
-│   ├── index.css          # Estilos principales
-│   └── styles.css         # Estilos globales
-└── *.json                 # Datos de prueba
+Estructura del poyecto
+se manejan tres modulos principales los cuales tienen sus propias carpetas .html .json y .css
+los modulos principales son: Agricultor, Cliente, Administrador
+cada carpeta contiene sus archivos para manejar la estructura de cada modulo, ademas el servidor central server.js donde se manejan las rutas y el acceso principal a cada modulo
 
 Características Principales
 
